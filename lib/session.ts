@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { NEST_API_URL } from "./api";
 
 export const SESSION_COOKIE = "viewz_admin_session";
@@ -23,7 +24,9 @@ export async function getSessionToken() {
 // Revalide systématiquement le rôle auprès de l'API (source de vérité), le
 // token seul ne suffit pas à faire confiance à un rôle potentiellement
 // périmé (utilisateur rétrogradé entre deux sessions par ex.).
-export async function getCurrentUser(): Promise<SessionUser | null> {
+// cache() : un seul appel à l'API par requête, même si plusieurs composants
+// (bouton de la navbar desktop + menu mobile) le demandent.
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const token = await getSessionToken();
   if (!token) return null;
 
@@ -37,7 +40,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   } catch {
     return null;
   }
-}
+});
 
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await getCurrentUser();

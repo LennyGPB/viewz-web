@@ -40,9 +40,12 @@ export const deleteAdminPost = (id: string) => request(`/api/admin/posts/${id}`,
 
 // --- Événements ---
 export const getAdminEvents = () => request<AdminRecord[]>("/api/admin/events");
+export const getAdminEvent = (id: string) => request<AdminRecord>(`/api/admin/events/${id}`);
 export const deleteAdminEvent = (id: string) => request(`/api/admin/events/${id}`, { method: "DELETE" });
 export const createEvent = (payload: Record<string, unknown>) =>
   request<AdminRecord>("/api/events", { method: "POST", body: JSON.stringify(payload) });
+export const updateAdminEvent = (id: string, payload: Record<string, unknown>) =>
+  request<AdminRecord>(`/api/admin/events/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
 
 // --- Scène (vidéos / images) ---
 export const getAdminSpotlights = () => request<AdminRecord[]>("/api/admin/spotlights");
@@ -50,9 +53,12 @@ export const deleteAdminSpotlight = (id: string) => request(`/api/admin/spotligh
 
 // --- Spots de danse ---
 export const getAdminDanceSpots = () => request<AdminRecord[]>("/api/admin/dance-spots");
+export const getAdminDanceSpot = (id: string) => request<AdminRecord>(`/api/admin/dance-spots/${id}`);
 export const deleteAdminDanceSpot = (id: string) => request(`/api/admin/dance-spots/${id}`, { method: "DELETE" });
 export const createDanceSpot = (payload: Record<string, unknown>) =>
   request<AdminRecord>("/api/dance-spots", { method: "POST", body: JSON.stringify(payload) });
+export const updateAdminDanceSpot = (id: string, payload: Record<string, unknown>) =>
+  request<AdminRecord>(`/api/admin/dance-spots/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
 
 // --- Utilisateurs ---
 export const getAdminUsers = (search?: string) =>

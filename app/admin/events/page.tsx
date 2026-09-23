@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
+import { btnSmall } from "@/lib/ui";
 import AdminResourceList from "../AdminResourceList";
 import { getAdminEvents, deleteAdminEvent, type AdminRecord } from "@/lib/adminApi";
 
@@ -27,7 +28,8 @@ export default function AdminEventsPage() {
         return `@${event.author?.username ?? "?"} · ${event.city ?? "Sans ville"}`;
       }}
       confirmLabel={(item) => (item as EventItem).title}
-      headerAction={<Link href="/admin/events/new" className="btn-small">+ Nouvel événement</Link>}
+      getEditHref={(item) => `/admin/events/${item.id}/edit`}
+      headerAction={<Link href="/admin/events/new" className={btnSmall}>+ Nouvel événement</Link>}
     />
   );
 }

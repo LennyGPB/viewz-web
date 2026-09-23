@@ -12,10 +12,15 @@ async function proxyToAdminApi(request: NextRequest, path: string[]) {
     return NextResponse.json({ message: "Authentification requise." }, { status: 401 });
   }
 
+  const hasBody = request.method !== "GET" && request.method !== "DELETE";
   const search = request.nextUrl.search;
   const nestResponse = await fetch(`${NEST_API_URL}/admin/${path.join("/")}${search}`, {
     method: request.method,
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
+    },
+    body: hasBody ? await request.text() : undefined,
     cache: "no-store",
   });
 
@@ -32,6 +37,11 @@ export async function GET(request: NextRequest, ctx: { params: Promise<{ path: s
 }
 
 export async function DELETE(request: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  const { path } = await ctx.params;
+  return proxyToAdminApi(request, path);
+}
+
+export async function PATCH(request: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
   return proxyToAdminApi(request, path);
 }

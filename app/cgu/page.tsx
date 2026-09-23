@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { contactBox } from "@/lib/ui";
 import LegalLayout, { type LegalSection } from "../components/LegalLayout";
 
 export const metadata: Metadata = { title: "Conditions générales d’utilisation" };
 const mail = <a href="mailto:gleam-pro@proton.me">gleam-pro@proton.me</a>;
 const sections: LegalSection[] = [
-  {id:"editeur",number:"01",title:"Éditeur de l’application",content:<div className="contact-box"><p><strong>GOMES PINTO BARRETO Lenny</strong><br/>Auto-entrepreneur<br/>SIRET : 93883298700011<br/>Contact : {mail}</p></div>},
+  {id:"editeur",number:"01",title:"Éditeur de l’application",content:<div className={contactBox}><p><strong>GOMES PINTO BARRETO Lenny</strong><br/>Auto-entrepreneur<br/>SIRET : 93883298700011<br/>Contact : {mail}</p></div>},
   {id:"objet",number:"02",title:"Objet",content:<><p>ViewZ est une application mobile communautaire dédiée aux danseurs. Elle permet aux utilisateurs de publier des annonces, trouver des partenaires de danse, partager leur localisation en temps réel, accéder à une carte des spots de danse et communiquer via un système de messagerie intégré.</p><p>Les présentes Conditions Générales d’Utilisation (CGU) définissent les modalités d’accès et d’utilisation de l’application ViewZ.</p></>},
   {id:"acceptation",number:"03",title:"Acceptation des CGU",content:<p>L’utilisation de ViewZ implique l’acceptation pleine et entière des présentes CGU. En créant un compte ou en utilisant l’application, l’utilisateur reconnaît avoir lu, compris et accepté ces conditions.</p>},
   {id:"acces",number:"04",title:"Accès à l’application",content:<><p>L’application est accessible gratuitement à toute personne disposant d’un accès internet et d’un appareil compatible iOS ou Android. L’éditeur se réserve le droit de suspendre, modifier ou interrompre l’accès à tout ou partie de l’application, sans préavis ni indemnité.</p><p>ViewZ est réservée aux personnes âgées de 13 ans ou plus. En dessous de 16 ans, l’accord d’un représentant légal est requis conformément au RGPD.</p></>},
@@ -15,6 +16,6 @@ const sections: LegalSection[] = [
   {id:"responsabilite",number:"09",title:"Disponibilité et responsabilité",content:<><p>L’éditeur s’efforce d’assurer la disponibilité de l’application, sans pouvoir garantir un accès ininterrompu. ViewZ est fournie « en l’état » sans garantie d’aucune sorte.</p><p>L’éditeur ne saurait être tenu responsable :</p><ul><li>des dommages directs ou indirects liés à l’utilisation de l’application ;</li><li>des contenus publiés par les utilisateurs ;</li><li>des interactions entre utilisateurs hors de l’application ;</li><li>des interruptions liées à des tiers.</li></ul></>},
   {id:"resiliation",number:"10",title:"Suspension et résiliation",content:<><p>L’éditeur peut suspendre ou supprimer sans préavis un compte en cas de non-respect des CGU, de comportement frauduleux ou abusif, ou de signalements répétés et avérés.</p><p>L’utilisateur peut supprimer son compte à tout moment depuis les paramètres de l’application.</p></>},
   {id:"modification",number:"11",title:"Modification des CGU",content:<p>L’éditeur peut modifier les présentes CGU à tout moment. Toute modification significative sera notifiée dans l’application. La poursuite de son utilisation après modification vaut acceptation des nouvelles CGU.</p>},
-  {id:"droit",number:"12",title:"Droit applicable et juridiction",content:<><p>Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux français seront seuls compétents.</p><div className="contact-box"><p>Pour toute question : {mail}</p></div></>},
+  {id:"droit",number:"12",title:"Droit applicable et juridiction",content:<><p>Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux français seront seuls compétents.</p><div className={contactBox}><p>Pour toute question : {mail}</p></div></>},
 ];
 export default function CguPage(){return <LegalLayout title="Conditions générales d’utilisation" kicker="CADRE D’UTILISATION" sections={sections}/>}

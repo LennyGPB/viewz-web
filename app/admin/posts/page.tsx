@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
+import { cx } from "@/lib/ui";
 import AdminResourceList from "../AdminResourceList";
 import { getAdminPosts, deleteAdminPost, type AdminRecord } from "@/lib/adminApi";
 
@@ -13,6 +14,18 @@ interface PostItem extends AdminRecord {
   isOfficial?: boolean;
   styles?: { id: string; name: string }[];
   author?: { username: string };
+}
+
+const detailRow = "flex gap-2.5 border-b border-line py-2.5 text-[13px] last:border-b-0";
+const detailLabel = "w-[120px] shrink-0 font-bold text-muted";
+
+function DetailRow({ label, stacked, children }: { label: string; stacked?: boolean; children: ReactNode }) {
+  return (
+    <div className={cx(detailRow, stacked && "flex-col gap-1.5")}>
+      <span className={detailLabel}>{label}</span>
+      <span className="whitespace-pre-wrap leading-[1.6] text-ink">{children}</span>
+    </div>
+  );
 }
 
 const formatDate = (value?: string | null) => {
@@ -43,44 +56,24 @@ export default function AdminPostsPage() {
         const post = item as PostItem;
         return (
           <div>
-            <div className="admin-detail-row">
-              <span className="admin-detail-label">Auteur</span>
-              <span className="admin-detail-value">@{post.author?.username ?? "?"}</span>
-            </div>
-            <div className="admin-detail-row">
-              <span className="admin-detail-label">Ville</span>
-              <span className="admin-detail-value">{post.city ?? "—"}</span>
-            </div>
-            {post.eventDate && (
-              <div className="admin-detail-row">
-                <span className="admin-detail-label">Date de l&apos;événement</span>
-                <span className="admin-detail-value">{formatDate(post.eventDate)}</span>
-              </div>
-            )}
-            <div className="admin-detail-row">
-              <span className="admin-detail-label">Publiée le</span>
-              <span className="admin-detail-value">{formatDate(post.createdAt)}</span>
-            </div>
-            {post.isOfficial && (
-              <div className="admin-detail-row">
-                <span className="admin-detail-label">Statut</span>
-                <span className="admin-detail-value">Officielle ViewZ</span>
-              </div>
-            )}
+            <DetailRow label="Auteur">@{post.author?.username ?? "?"}</DetailRow>
+            <DetailRow label="Ville">{post.city ?? "—"}</DetailRow>
+            {post.eventDate && <DetailRow label="Date de l'événement">{formatDate(post.eventDate)}</DetailRow>}
+            <DetailRow label="Publiée le">{formatDate(post.createdAt)}</DetailRow>
+            {post.isOfficial && <DetailRow label="Statut">Officielle ViewZ</DetailRow>}
             {post.styles && post.styles.length > 0 && (
-              <div className="admin-detail-row">
-                <span className="admin-detail-label">Styles</span>
-                <span className="admin-detail-badges">
+              <div className={detailRow}>
+                <span className={detailLabel}>Styles</span>
+                <span className="flex flex-wrap gap-1.5">
                   {post.styles.map((style) => (
-                    <span key={style.id} className="admin-detail-badge">{style.name}</span>
+                    <span key={style.id} className="rounded-full border border-brand/30 bg-purple/15 px-2.5 py-1 text-[11px] font-bold text-brand-pale">
+                      {style.name}
+                    </span>
                   ))}
                 </span>
               </div>
             )}
-            <div className="admin-detail-row" style={{ flexDirection: "column", gap: 6 }}>
-              <span className="admin-detail-label">Description</span>
-              <span className="admin-detail-value">{post.description}</span>
-            </div>
+            <DetailRow label="Description" stacked>{post.description}</DetailRow>
           </div>
         );
       }}

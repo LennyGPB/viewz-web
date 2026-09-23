@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getPlacePredictions, getPlaceDetails, type PlacePrediction } from "@/lib/adminApi";
+import { cx, field, hint, input, label as labelClass } from "@/lib/ui";
+
+const option = "block w-full border-b border-line bg-transparent px-3.5 py-[11px] text-left text-[13px] last:border-b-0";
 
 interface PlacesInputProps {
   label: string;
@@ -76,9 +79,10 @@ export default function PlacesInput({ label, value, placeholder, required, onSel
   };
 
   return (
-    <div className="form-field" ref={containerRef} style={{ position: "relative" }}>
-      <label>{label}</label>
+    <div className={cx(field, "relative")} ref={containerRef}>
+      <label className={labelClass}>{label}</label>
       <input
+        className={input}
         value={query}
         required={required}
         placeholder={placeholder ?? "Rechercher une ville ou une adresse..."}
@@ -89,17 +93,17 @@ export default function PlacesInput({ label, value, placeholder, required, onSel
         onFocus={() => setIsOpen(true)}
         autoComplete="off"
       />
-      {isResolving && <span className="form-hint">Localisation en cours...</span>}
+      {isResolving && <span className={hint}>Localisation en cours...</span>}
       {isOpen && (isLoading || predictions.length > 0) && (
-        <div className="places-dropdown">
+        <div className="absolute inset-x-0 top-[calc(100%_+_6px)] z-20 max-h-60 overflow-y-auto rounded-[14px] border border-line bg-[#100d16] shadow-[0_16px_40px_rgba(0,0,0,.5)]">
           {isLoading ? (
-            <div className="places-option places-option-static">Recherche...</div>
+            <div className={cx(option, "cursor-default text-muted")}>Recherche...</div>
           ) : (
             predictions.map((prediction) => (
               <button
                 type="button"
                 key={prediction.place_id}
-                className="places-option"
+                className={cx(option, "cursor-pointer text-ink hover:bg-purple/12")}
                 onClick={() => handlePick(prediction)}
               >
                 {prediction.description}

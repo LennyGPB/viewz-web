@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
+import { btnSmall } from "@/lib/ui";
 import AdminResourceList from "../AdminResourceList";
 import { getAdminDanceSpots, deleteAdminDanceSpot, type AdminRecord } from "@/lib/adminApi";
 
@@ -23,7 +24,8 @@ export default function AdminDanceSpotsPage() {
       renderTitle={(item) => (item as DanceSpotItem).name}
       renderSubtitle={(item) => (item as DanceSpotItem).address}
       confirmLabel={(item) => (item as DanceSpotItem).name}
-      headerAction={<Link href="/admin/dance-spots/new" className="btn-small">+ Nouveau spot</Link>}
+      getEditHref={(item) => `/admin/dance-spots/${item.id}/edit`}
+      headerAction={<Link href="/admin/dance-spots/new" className={btnSmall}>+ Nouveau spot</Link>}
     />
   );
 }

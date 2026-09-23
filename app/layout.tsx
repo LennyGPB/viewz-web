@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, MuseoModerno } from "next/font/google";
+import { Geist_Mono, MuseoModerno, Nunito } from "next/font/google";
+import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
 });
 
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 const museoModerno = MuseoModerno({
-  variable: "--font-museo",
+  variable: "--font-museo-moderno",
   subsets: ["latin"],
   weight: ["700", "800", "900"],
 });
@@ -28,11 +29,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} ${museoModerno.variable} h-full antialiased`}
+      className={`${nunito.variable} ${geistMono.variable} ${museoModerno.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col bg-bg font-sans text-ink">
         <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );

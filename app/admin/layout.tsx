@@ -7,7 +7,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const user = await requireAdmin();
 
   return (
-    <div className="admin-shell">
+    <div className="min-h-screen bg-bg bg-[radial-gradient(circle_at_80%_0%,rgba(123,62,218,.16),transparent_40%)] pt-24">
       <AdminShell user={user}>{children}</AdminShell>
     </div>
   );

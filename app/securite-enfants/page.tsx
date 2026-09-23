@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { contactBox } from "@/lib/ui";
 import LegalLayout, { type LegalSection } from "../components/LegalLayout";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ const sections: LegalSection[] = [
     id: "contact",
     number: "05",
     title: "Contact",
-    content: <><div className="contact-box"><p>Pour toute question relative à la sécurité des enfants sur ViewZ :<br />{contact}</p></div><p>ViewZ respecte l’ensemble des lois applicables en matière de protection des mineurs, notamment la loi française, le RGPD et les directives européennes sur les services numériques (DSA).</p></>,
+    content: <><div className={contactBox}><p>Pour toute question relative à la sécurité des enfants sur ViewZ :<br />{contact}</p></div><p>ViewZ respecte l’ensemble des lois applicables en matière de protection des mineurs, notamment la loi française, le RGPD et les directives européennes sur les services numériques (DSA).</p></>,
   },
 ];
 

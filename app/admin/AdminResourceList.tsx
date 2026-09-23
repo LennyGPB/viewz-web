@@ -1,7 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { AdminRecord } from "@/lib/adminApi";
+import { adminLoading, alertError, btnGhostSmall, btnSmallDanger, cx, iconButtonDanger, iconButtonEdit } from "@/lib/ui";
+import AdminHeading from "./AdminHeading";
+
+const modalOverlay = "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5";
+const modalPanel = "rounded-[20px] border border-line bg-panel p-[26px]";
 
 interface AdminResourceListProps {
   title: string;
@@ -13,6 +19,7 @@ interface AdminResourceListProps {
   renderSubtitle: (item: AdminRecord) => string;
   confirmLabel: (item: AdminRecord) => string;
   renderDetail?: (item: AdminRecord) => ReactNode;
+  getEditHref?: (item: AdminRecord) => string;
   headerAction?: ReactNode;
   onSearch?: (query: string) => void;
   searchPlaceholder?: string;
@@ -28,6 +35,7 @@ export default function AdminResourceList({
   renderSubtitle,
   confirmLabel,
   renderDetail,
+  getEditHref,
   headerAction,
   onSearch,
   searchPlaceholder,
@@ -83,18 +91,12 @@ export default function AdminResourceList({
 
   return (
     <div>
-      <div className="admin-heading">
-        <div>
-          <h1>{title}</h1>
-          {description && <p>{description}</p>}
-        </div>
-        {headerAction}
-      </div>
+      <AdminHeading title={title} description={description} action={headerAction} />
 
       {onSearch && (
-        <div className="admin-toolbar">
+        <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
           <input
-            className="admin-search"
+            className="min-w-[200px] max-w-[320px] flex-1 rounded-full border border-line bg-white/5 px-3.5 py-2.5 text-[13px] text-ink focus:border-brand/60 focus:outline-none"
             placeholder={searchPlaceholder ?? "Rechercher..."}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -102,30 +104,44 @@ export default function AdminResourceList({
         </div>
       )}
 
-      {error && <div className="admin-error">{error}</div>}
+      {error && <div className={alertError}>{error}</div>}
 
       {isLoading ? (
-        <div className="admin-loading">Chargement...</div>
+        <div className={adminLoading}>Chargement...</div>
       ) : items.length === 0 ? (
-        <div className="admin-empty">{emptyLabel}</div>
+        <div className={cx(adminLoading, "rounded-[18px] border border-dashed border-line")}>{emptyLabel}</div>
       ) : (
-        <div className="admin-list">
+        <div className="flex flex-col gap-2.5">
           {items.map((item) => (
             <div
               key={item.id}
-              className={`admin-row${renderDetail ? " admin-row-clickable" : ""}`}
+              className={cx(
+                "flex items-center gap-3.5 rounded-2xl border border-line bg-white/[.035] px-[18px] py-4",
+                renderDetail && "cursor-pointer transition duration-150 hover:border-brand/40 hover:bg-white/6",
+              )}
               onClick={renderDetail ? () => setViewItem(item) : undefined}
               role={renderDetail ? "button" : undefined}
               tabIndex={renderDetail ? 0 : undefined}
               onKeyDown={renderDetail ? (e) => { if (e.key === "Enter") setViewItem(item); } : undefined}
             >
-              <div className="admin-row-body">
-                <div className="admin-row-title">{renderTitle(item)}</div>
-                <div className="admin-row-sub">{renderSubtitle(item)}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-bold text-white">{renderTitle(item)}</div>
+                <div className="mt-[3px] truncate text-xs text-muted">{renderSubtitle(item)}</div>
               </div>
+              {getEditHref && (
+                <Link
+                  href={getEditHref(item)}
+                  className={iconButtonEdit}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Modifier"
+                  title="Modifier"
+                >
+                  ✎
+                </Link>
+              )}
               <button
                 type="button"
-                className="btn-danger"
+                className={iconButtonDanger}
                 disabled={deletingId !== null}
                 onClick={(e) => { e.stopPropagation(); setPendingDelete(item); }}
                 aria-label="Supprimer"
@@ -139,36 +155,15 @@ export default function AdminResourceList({
       )}
 
       {viewItem && renderDetail && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: "fixed", inset: 0, zIndex: 50,
-            background: "rgba(0,0,0,.6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 20,
-          }}
-          onClick={() => setViewItem(null)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(560px, 100%)",
-              maxHeight: "min(80vh, 720px)",
-              overflowY: "auto",
-              background: "#0f0d14",
-              border: "1px solid var(--line)",
-              borderRadius: 20,
-              padding: 26,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 19 }}>{renderTitle(viewItem)}</h2>
+        <div role="dialog" aria-modal="true" className={modalOverlay} onClick={() => setViewItem(null)}>
+          <div onClick={(e) => e.stopPropagation()} className={cx(modalPanel, "max-h-[min(80vh,720px)] w-[min(560px,100%)] overflow-y-auto")}>
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <h2 className="m-0 text-[19px]">{renderTitle(viewItem)}</h2>
               <button
                 type="button"
                 onClick={() => setViewItem(null)}
                 aria-label="Fermer"
-                style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 20, cursor: "pointer", lineHeight: 1 }}
+                className="cursor-pointer border-none bg-transparent text-xl leading-none text-muted"
               >
                 ×
               </button>
@@ -176,19 +171,13 @@ export default function AdminResourceList({
 
             {renderDetail(viewItem)}
 
-            <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="btn-ghost"
-                style={{ padding: "10px 18px", fontSize: 13 }}
-                onClick={() => setViewItem(null)}
-              >
+            <div className="mt-6 flex justify-end gap-2.5">
+              <button type="button" className={btnGhostSmall} onClick={() => setViewItem(null)}>
                 Fermer
               </button>
               <button
                 type="button"
-                className="btn-small"
-                style={{ background: "linear-gradient(135deg,#f87171,#b91c1c)" }}
+                className={btnSmallDanger}
                 onClick={() => { setPendingDelete(viewItem); setViewItem(null); }}
               >
                 Supprimer
@@ -202,33 +191,18 @@ export default function AdminResourceList({
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: "fixed", inset: 0, zIndex: 50,
-            background: "rgba(0,0,0,.6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 20,
-          }}
+          className={modalOverlay}
           onClick={() => (deletingId ? null : setPendingDelete(null))}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(380px, 100%)",
-              background: "#0f0d14",
-              border: "1px solid var(--line)",
-              borderRadius: 20,
-              padding: 26,
-            }}
-          >
-            <h2 style={{ margin: "0 0 10px", fontSize: 18 }}>Confirmer la suppression</h2>
-            <p style={{ color: "var(--muted)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+          <div onClick={(e) => e.stopPropagation()} className={cx(modalPanel, "w-[min(380px,100%)]")}>
+            <h2 className="mt-0 mb-2.5 text-lg">Confirmer la suppression</h2>
+            <p className="m-0 text-sm leading-[1.6] text-muted">
               Supprimer définitivement « {confirmLabel(pendingDelete)} » ? Cette action est irréversible.
             </p>
-            <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+            <div className="mt-[22px] flex justify-end gap-2.5">
               <button
                 type="button"
-                className="btn-ghost"
-                style={{ padding: "10px 18px", fontSize: 13 }}
+                className={btnGhostSmall}
                 disabled={deletingId !== null}
                 onClick={() => setPendingDelete(null)}
               >
@@ -236,8 +210,7 @@ export default function AdminResourceList({
               </button>
               <button
                 type="button"
-                className="btn-small"
-                style={{ background: "linear-gradient(135deg,#f87171,#b91c1c)" }}
+                className={btnSmallDanger}
                 disabled={deletingId !== null}
                 onClick={confirmDelete}
               >

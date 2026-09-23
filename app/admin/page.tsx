@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { getAdminStats, type AdminStats } from "@/lib/adminApi";
+import { alertError } from "@/lib/ui";
+import AdminHeading from "./AdminHeading";
 
 const CARDS: { key: keyof AdminStats; label: string }[] = [
   { key: "posts", label: "Recherches" },
@@ -23,20 +25,18 @@ export default function AdminOverviewPage() {
 
   return (
     <div>
-      <div className="admin-heading">
-        <div>
-          <h1>Vue d&apos;ensemble</h1>
-          <p>Administration ViewZ — gère les recherches, événements, contenus et utilisateurs.</p>
-        </div>
-      </div>
+      <AdminHeading
+        title="Vue d'ensemble"
+        description="Administration ViewZ — gère les recherches, événements, contenus et utilisateurs."
+      />
 
-      {error && <div className="admin-error">{error}</div>}
+      {error && <div className={alertError}>{error}</div>}
 
-      <div className="admin-stats">
+      <div className="mb-[30px] grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3.5">
         {CARDS.map((card) => (
-          <div className="admin-stat-card" key={card.key}>
-            <strong>{stats ? stats[card.key] : "—"}</strong>
-            <span>{card.label}</span>
+          <div className="rounded-[18px] border border-line bg-white/4 p-5" key={card.key}>
+            <strong className="block text-[26px] text-white">{stats ? stats[card.key] : "—"}</strong>
+            <span className="text-xs text-muted">{card.label}</span>
           </div>
         ))}
       </div>
