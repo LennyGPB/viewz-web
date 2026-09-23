@@ -15,8 +15,8 @@ export default function AdminSpotlightsPage() {
 
   return (
     <AdminResourceList
-      title="Vidéos / Images"
-      description="Contenus de la Scène (vitrine vidéos et images)."
+      title="Scène"
+      description="Vidéos et images publiées par l'équipe dans la Scène. Les médias des profils sont dans « Médias des profils »."
       emptyLabel="Aucun contenu pour le moment."
       fetchItems={fetchItems}
       deleteItem={deleteAdminSpotlight}

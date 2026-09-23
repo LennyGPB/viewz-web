@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { getAdminDanceSpot, type AdminRecord } from "@/lib/adminApi";
-import { adminLoading, alertError } from "@/lib/ui";
+import { alertError, loadingState } from "../../../adminUi";
 import DanceSpotForm, { type DanceSpotFormInitial } from "../../DanceSpotForm";
 
 export default function EditDanceSpotPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +18,7 @@ export default function EditDanceSpotPage({ params }: { params: Promise<{ id: st
       .finally(() => setIsLoading(false));
   }, [id]);
 
-  if (isLoading) return <div className={adminLoading}>Chargement...</div>;
+  if (isLoading) return <div className={loadingState}>Chargement...</div>;
   if (error || !spot) return <div className={alertError}>{error ?? "Spot introuvable."}</div>;
 
   const initial: DanceSpotFormInitial = {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, MuseoModerno, Nunito } from "next/font/google";
 import Footer from "./components/Footer";
+import HideOnAdmin from "./components/HideOnAdmin";
 import Navbar from "./components/Navbar";
 import "./globals.css";
 
@@ -32,9 +33,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${nunito.variable} ${geistMono.variable} ${museoModerno.variable} h-full scroll-smooth antialiased`}
     >
       <body className="flex min-h-full flex-col bg-bg font-sans text-ink">
-        <Navbar />
+        <HideOnAdmin><Navbar /></HideOnAdmin>
         {children}
-        <Footer />
+        <HideOnAdmin><Footer /></HideOnAdmin>
       </body>
     </html>
   );

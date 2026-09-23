@@ -1,16 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { createEvent, updateAdminEvent, getPresignedUpload, uploadFileToR2 } from "@/lib/adminApi";
-import { DANCE_STYLES } from "@/lib/styles";
-import { alertError, btnSmall, chip, cx, field, fileDrop, hint, input, label, textarea } from "@/lib/ui";
+import { useEffect, useState, type FormEvent } from "react";
+import { createEvent, updateAdminEvent, getAdminStyles, getPresignedUpload, uploadFileToR2 } from "@/lib/adminApi";
 import AdminHeading from "../AdminHeading";
 import PlacesInput from "../PlacesInput";
+import {
+  alertError, btnPrimary, btnSecondary, chip, cx, field, fileInput, formSection, formSectionTitle, hint, input, label, textarea,
+} from "../adminUi";
 
 const EVENT_TYPES = [
   "COURS_DE_DANSE", "BATTLE", "SPECTACLE", "TOURNAGE", "SOIREE", "STAGE", "WORKSHOP", "FESTIVAL", "AUTRE",
 ];
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  COURS_DE_DANSE: "Cours de danse", BATTLE: "Battle", SPECTACLE: "Spectacle", TOURNAGE: "Tournage",
+  SOIREE: "Soirée", STAGE: "Stage", WORKSHOP: "Workshop", FESTIVAL: "Festival", AUTRE: "Autre",
+};
 const DAYS = [
   { value: 1, label: "Lun" }, { value: 2, label: "Mar" }, { value: 3, label: "Mer" },
   { value: 4, label: "Jeu" }, { value: 5, label: "Ven" }, { value: 6, label: "Sam" }, { value: 0, label: "Dim" },
@@ -72,6 +78,15 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(initial?.image ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Liste lue en base : ce sont les seuls noms de style acceptés par l'API.
+  const [availableStyles, setAvailableStyles] = useState<string[] | null>(null);
+  const [stylesError, setStylesError] = useState(false);
+
+  useEffect(() => {
+    getAdminStyles()
+      .then((styles) => setAvailableStyles(styles.map((s) => s.name)))
+      .catch(() => setStylesError(true));
+  }, []);
 
   const toggleDay = (day: number) => {
     setRecurrenceDays((current) =>
@@ -158,140 +173,153 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
       <AdminHeading
         title={isEditing ? "Modifier l'événement" : "Nouvel événement"}
         description="Visible par tous les utilisateurs une fois publié."
+        back={{ href: "/admin/events", label: "Événements" }}
       />
 
       {error && <div className={alertError}>{error}</div>}
 
-      <form className="flex max-w-[640px] flex-col gap-[18px]" onSubmit={handleSubmit}>
-        <div className={field}>
-          <label htmlFor="title" className={label}>Titre</label>
-          <input id="title" className={input} required maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} />
-        </div>
+      <form className="flex max-w-[760px] flex-col gap-4 sm:gap-5" onSubmit={handleSubmit}>
+        <section className={formSection}>
+          <h2 className={formSectionTitle}>Informations</h2>
 
-        <div className={field}>
-          <label htmlFor="description" className={label}>Description</label>
-          <textarea id="description" className={textarea} required maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} />
-        </div>
-
-        <div className={field}>
-          <label className={label}>Image {isEditing ? "(laisser vide pour ne pas la changer)" : "(optionnelle)"}</label>
-          <div className={fileDrop}>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleFile(e.target.files?.[0] ?? null)} />
-          </div>
-          {imagePreview && (
-            <div className="mt-2.5 max-w-[280px] overflow-hidden rounded-[14px] border border-line">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imagePreview} alt="Aperçu" className="block w-full" />
-            </div>
-          )}
-        </div>
-
-        <div className={field}>
-          <label htmlFor="eventType" className={label}>Type</label>
-          <select id="eventType" className={input} value={eventType} onChange={(e) => setEventType(e.target.value)}>
-            {EVENT_TYPES.map((type) => (
-              <option key={type} value={type}>{type.replaceAll("_", " ")}</option>
-            ))}
-          </select>
-        </div>
-
-        <PlacesInput
-          label="Lieu (optionnel)"
-          value={city}
-          onSelect={({ address, latitude: lat, longitude: lng }) => {
-            setCity(address);
-            setLatitude(lat);
-            setLongitude(lng);
-          }}
-        />
-        {latitude !== null && longitude !== null && (
-          <span className={hint}>Position enregistrée : {latitude.toFixed(5)}, {longitude.toFixed(5)}</span>
-        )}
-
-        <div className={field}>
-          <label className={label}>Périodicité</label>
-          <div className="flex flex-wrap gap-1.5">
-            <button type="button" className={chip(scheduleType === "SPECIFIC")} onClick={() => setScheduleType("SPECIFIC")}>Date unique</button>
-            <button type="button" className={chip(scheduleType === "RECURRING")} onClick={() => setScheduleType("RECURRING")}>Récurrent</button>
-          </div>
-        </div>
-
-        {scheduleType === "SPECIFIC" ? (
           <div className={field}>
-            <label htmlFor="eventDate" className={label}>Date</label>
-            <input id="eventDate" className={input} type="datetime-local" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+            <label htmlFor="title" className={label}>Titre</label>
+            <input id="title" className={input} required maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
-        ) : (
-          <>
-            <div className={field}>
-              <label className={label}>Jours de récurrence</label>
-              <div className="flex flex-wrap gap-1.5">
-                {DAYS.map((day) => (
-                  <button
-                    key={day.value}
-                    type="button"
-                    className={chip(recurrenceDays.includes(day.value))}
-                    onClick={() => toggleDay(day.value)}
-                  >
-                    {day.label}
-                  </button>
-                ))}
+
+          <div className={field}>
+            <label htmlFor="description" className={label}>Description</label>
+            <textarea id="description" className={textarea} required maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} />
+            <span className={hint}>{description.length}/2000</span>
+          </div>
+
+          <div className={field}>
+            <label htmlFor="eventType" className={label}>Type</label>
+            <select id="eventType" className={input} value={eventType} onChange={(e) => setEventType(e.target.value)}>
+              {EVENT_TYPES.map((type) => (
+                <option key={type} value={type}>{EVENT_TYPE_LABELS[type] ?? type}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={field}>
+            <label htmlFor="image" className={label}>Image {isEditing ? "(laisser vide pour la garder)" : "(optionnelle)"}</label>
+            <input id="image" className={fileInput} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleFile(e.target.files?.[0] ?? null)} />
+            {imagePreview && (
+              <div className="mt-1 max-w-[280px] overflow-hidden rounded-lg border border-line">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imagePreview} alt="Aperçu" className="block w-full" />
               </div>
+            )}
+          </div>
+        </section>
+
+        <section className={formSection}>
+          <h2 className={formSectionTitle}>Date et lieu</h2>
+
+          <PlacesInput
+            label="Lieu (optionnel)"
+            value={city}
+            onSelect={({ address, latitude: lat, longitude: lng }) => {
+              setCity(address);
+              setLatitude(lat);
+              setLongitude(lng);
+            }}
+          />
+
+          <div className={field}>
+            <span className={label}>Périodicité</span>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className={chip(scheduleType === "SPECIFIC")} onClick={() => setScheduleType("SPECIFIC")}>Date unique</button>
+              <button type="button" className={chip(scheduleType === "RECURRING")} onClick={() => setScheduleType("RECURRING")}>Récurrent</button>
+            </div>
+          </div>
+
+          {scheduleType === "SPECIFIC" ? (
+            <div className={field}>
+              <label htmlFor="eventDate" className={label}>Date et heure</label>
+              <input id="eventDate" className={cx(input, "sm:max-w-[260px]")} type="datetime-local" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+            </div>
+          ) : (
+            <>
+              <div className={field}>
+                <span className={label}>Jours</span>
+                <div className="flex flex-wrap gap-2">
+                  {DAYS.map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      className={chip(recurrenceDays.includes(day.value))}
+                      onClick={() => toggleDay(day.value)}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={field}>
+                <label htmlFor="recurrenceTime" className={label}>Heure</label>
+                <input id="recurrenceTime" className={cx(input, "sm:max-w-[160px]")} type="time" value={recurrenceTime} onChange={(e) => setRecurrenceTime(e.target.value)} />
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className={formSection}>
+          <h2 className={formSectionTitle}>Détails</h2>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-[180px_1fr]">
+            <div className={field}>
+              <label htmlFor="price" className={label}>Prix en € (optionnel)</label>
+              <input id="price" className={input} type="number" min={0} step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
             </div>
             <div className={field}>
-              <label htmlFor="recurrenceTime" className={label}>Heure</label>
-              <input id="recurrenceTime" className={input} type="time" value={recurrenceTime} onChange={(e) => setRecurrenceTime(e.target.value)} />
+              <label htmlFor="link" className={label}>Lien « En savoir plus » (optionnel)</label>
+              <input id="link" className={input} type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} />
             </div>
-          </>
-        )}
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className={field}>
-            <label htmlFor="price" className={label}>Prix (€, optionnel)</label>
-            <input id="price" className={input} type="number" min={0} step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
           </div>
-          <div className={field}>
-            <label htmlFor="link" className={label}>Lien (optionnel)</label>
-            <input id="link" className={input} type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} />
-          </div>
-        </div>
 
-        <div className={field}>
-          <label className={cx(label, "flex cursor-pointer items-center gap-2")}>
+          <div className={field}>
+            <span className={label}>Styles (optionnel)</span>
+            <div className="flex max-h-[200px] flex-wrap gap-2 overflow-y-auto rounded-lg border border-line bg-white/[.02] p-3">
+              {stylesError && <span className={hint}>Impossible de charger les styles.</span>}
+              {!stylesError && !availableStyles && <span className={hint}>Chargement des styles...</span>}
+              {availableStyles?.map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  className={chip(selectedStyles.includes(style))}
+                  onClick={() => toggleStyle(style)}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
+            <span className={hint}>
+              {selectedStyles.length > 0 ? `${selectedStyles.length} sélectionné${selectedStyles.length > 1 ? "s" : ""}` : "Aucun style sélectionné"}
+            </span>
+          </div>
+
+          <label className="flex cursor-pointer items-start gap-3">
             <input
               type="checkbox"
+              className="mt-0.5 size-4 shrink-0 cursor-pointer accent-accent"
               checked={showOrganizer}
               onChange={(e) => setShowOrganizer(e.target.checked)}
             />
-            Afficher « Organisé par » sur la fiche
+            <span>
+              <span className="block text-sm text-ink">Afficher « Organisé par » sur la fiche</span>
+              <span className={hint}>À décocher si l’événement n’est pas organisé par ViewZ (repris d’un autre réseau, etc.).</span>
+            </span>
           </label>
-          <span className={hint}>
-            À décocher si l’événement n’est pas organisé par ViewZ (repris d’un autre réseau, etc.).
-          </span>
-        </div>
+        </section>
 
-        <div className={field}>
-          <label className={label}>Styles (optionnel)</label>
-          <div className="flex max-h-[180px] flex-wrap gap-1.5 overflow-y-auto rounded-[14px] border border-line bg-white/2 p-3">
-            {DANCE_STYLES.map((style) => (
-              <button
-                key={style}
-                type="button"
-                className={chip(selectedStyles.includes(style))}
-                onClick={() => toggleStyle(style)}
-              >
-                {style}
-              </button>
-            ))}
-          </div>
-          <span className={hint}>
-            {selectedStyles.length > 0 ? `${selectedStyles.length} sélectionné(s)` : "Aucun style sélectionné"}
-          </span>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Link href="/admin/events" className={btnSecondary}>Annuler</Link>
+          <button type="submit" className={btnPrimary} disabled={isSubmitting}>
+            {isSubmitting ? "Enregistrement..." : isEditing ? "Enregistrer les modifications" : "Publier l'événement"}
+          </button>
         </div>
-
-        <button type="submit" className={cx(btnSmall, "self-start")} disabled={isSubmitting}>
-          {isSubmitting ? "Enregistrement..." : isEditing ? "Enregistrer les modifications" : "Publier l'événement"}
-        </button>
       </form>
     </div>
   );

@@ -38,6 +38,17 @@ export const getAdminPosts = (search?: string) =>
   request<AdminRecord[]>(`/api/admin/posts${search ? `?search=${encodeURIComponent(search)}` : ""}`);
 export const deleteAdminPost = (id: string) => request(`/api/admin/posts/${id}`, { method: "DELETE" });
 
+// --- Styles de danse (lus en base) ---
+export interface AdminStyle {
+  id: string;
+  name: string;
+  _count: { users: number; posts: number; events: number };
+}
+export const getAdminStyles = () => request<AdminStyle[]>("/api/admin/styles");
+export const createAdminStyle = (name: string) =>
+  request<AdminStyle>("/api/admin/styles", { method: "POST", body: JSON.stringify({ name }) });
+export const deleteAdminStyle = (id: string) => request(`/api/admin/styles/${id}`, { method: "DELETE" });
+
 // --- Événements ---
 export const getAdminEvents = () => request<AdminRecord[]>("/api/admin/events");
 export const getAdminEvent = (id: string) => request<AdminRecord>(`/api/admin/events/${id}`);
@@ -64,6 +75,20 @@ export const updateAdminDanceSpot = (id: string, payload: Record<string, unknown
 export const getAdminUsers = (search?: string) =>
   request<AdminRecord[]>(`/api/admin/users${search ? `?search=${encodeURIComponent(search)}` : ""}`);
 export const deleteAdminUser = (id: string) => request(`/api/admin/users/${id}`, { method: "DELETE" });
+
+// --- Médias des profils ---
+export interface AdminUserMedia {
+  id: string;
+  username: string;
+  updatedAt: string;
+  profilePic: string | null;
+  videoUrl: string | null;
+  profilePhotos: string[];
+}
+export const getAdminUserMedia = (search?: string) =>
+  request<AdminUserMedia[]>(`/api/admin/user-media${search ? `?search=${encodeURIComponent(search)}` : ""}`);
+export const deleteAdminUserMedia = (userId: string, url: string) =>
+  request(`/api/admin/users/${userId}/media?url=${encodeURIComponent(url)}`, { method: "DELETE" });
 
 // --- Stats ---
 export interface AdminStats {

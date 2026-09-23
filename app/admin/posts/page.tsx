@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, type ReactNode } from "react";
-import { cx } from "@/lib/ui";
+import { badge, cx } from "../adminUi";
 import AdminResourceList from "../AdminResourceList";
 import { getAdminPosts, deleteAdminPost, type AdminRecord } from "@/lib/adminApi";
 
@@ -16,14 +16,14 @@ interface PostItem extends AdminRecord {
   author?: { username: string };
 }
 
-const detailRow = "flex gap-2.5 border-b border-line py-2.5 text-[13px] last:border-b-0";
-const detailLabel = "w-[120px] shrink-0 font-bold text-muted";
+const detailRow = "flex flex-col gap-1 border-b border-line py-3 text-sm first:pt-0 last:border-b-0 sm:flex-row sm:gap-4";
+const detailLabel = "shrink-0 text-[13px] text-muted sm:w-[150px]";
 
 function DetailRow({ label, stacked, children }: { label: string; stacked?: boolean; children: ReactNode }) {
   return (
-    <div className={cx(detailRow, stacked && "flex-col gap-1.5")}>
+    <div className={cx(detailRow, stacked && "sm:flex-col sm:gap-1.5")}>
       <span className={detailLabel}>{label}</span>
-      <span className="whitespace-pre-wrap leading-[1.6] text-ink">{children}</span>
+      <span className="whitespace-pre-wrap leading-relaxed text-ink">{children}</span>
     </div>
   );
 }
@@ -66,7 +66,7 @@ export default function AdminPostsPage() {
                 <span className={detailLabel}>Styles</span>
                 <span className="flex flex-wrap gap-1.5">
                   {post.styles.map((style) => (
-                    <span key={style.id} className="rounded-full border border-brand/30 bg-purple/15 px-2.5 py-1 text-[11px] font-bold text-brand-pale">
+                    <span key={style.id} className={badge}>
                       {style.name}
                     </span>
                   ))}

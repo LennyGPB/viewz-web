@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getPlacePredictions, getPlaceDetails, type PlacePrediction } from "@/lib/adminApi";
-import { cx, field, hint, input, label as labelClass } from "@/lib/ui";
+import { cx, field, hint, input, label as labelClass } from "./adminUi";
 
-const option = "block w-full border-b border-line bg-transparent px-3.5 py-[11px] text-left text-[13px] last:border-b-0";
+const option = "block w-full border-b border-line bg-transparent px-3 py-2.5 text-left text-sm last:border-b-0";
 
 interface PlacesInputProps {
   label: string;
@@ -95,7 +95,7 @@ export default function PlacesInput({ label, value, placeholder, required, onSel
       />
       {isResolving && <span className={hint}>Localisation en cours...</span>}
       {isOpen && (isLoading || predictions.length > 0) && (
-        <div className="absolute inset-x-0 top-[calc(100%_+_6px)] z-20 max-h-60 overflow-y-auto rounded-[14px] border border-line bg-[#100d16] shadow-[0_16px_40px_rgba(0,0,0,.5)]">
+        <div className="absolute inset-x-0 top-[calc(100%_+_6px)] z-20 max-h-60 overflow-y-auto rounded-lg border border-line bg-admin-raised shadow-[0_16px_40px_rgba(0,0,0,.5)]">
           {isLoading ? (
             <div className={cx(option, "cursor-default text-muted")}>Recherche...</div>
           ) : (
@@ -103,7 +103,7 @@ export default function PlacesInput({ label, value, placeholder, required, onSel
               <button
                 type="button"
                 key={prediction.place_id}
-                className={cx(option, "cursor-pointer text-ink hover:bg-purple/12")}
+                className={cx(option, "cursor-pointer text-ink hover:bg-white/[.05]")}
                 onClick={() => handlePick(prediction)}
               >
                 {prediction.description}

@@ -19,30 +19,15 @@ export const eyebrow = "text-[11px] font-bold tracking-[.26em] text-brand-soft";
 
 // Boutons
 const brandGradient = "bg-linear-135 from-brand-from to-brand-to";
-export const btnSmallBase = "inline-flex cursor-pointer items-center gap-1.5 rounded-full border-none px-[18px] py-2.5 text-[13px] font-extrabold text-white no-underline hover:-translate-y-px disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60";
-export const btnSmall = cx(btnSmallBase, brandGradient);
-export const btnSmallDanger = cx(btnSmallBase, "bg-linear-135 from-[#f87171] to-[#b91c1c]");
-export const btnGhostSmall = "inline-flex cursor-pointer items-center rounded-full border border-white/40 bg-transparent px-[18px] py-2.5 text-[13px] font-bold text-white hover:border-brand/80";
 export const btnGradient = cx(brandGradient, "font-extrabold text-white");
-export const iconButton = "inline-flex size-[38px] shrink-0 cursor-pointer items-center justify-center rounded-full border no-underline transition duration-200 disabled:cursor-not-allowed disabled:opacity-50";
-export const iconButtonDanger = cx(iconButton, "border-red-400/30 bg-red-400/10 text-red-400 hover:bg-red-400/20");
-export const iconButtonEdit = cx(iconButton, "border-brand/30 bg-purple/15 text-brand-pale");
 
 // Formulaires
 export const field = "flex flex-col gap-1.5";
 export const label = "text-xs font-bold text-[#ddd7e8]";
 export const input = "rounded-xl border border-line bg-white/5 px-3.5 py-[11px] text-sm text-ink focus:border-brand/60 focus:outline-none";
 export const textarea = cx(input, "min-h-[90px] resize-y");
-export const hint = "text-[11px] text-faint";
-export const chip = (active: boolean) =>
-  cx(
-    "cursor-pointer rounded-full border px-3 py-2 text-xs",
-    active ? "border-brand/60 bg-purple/25 text-white" : "border-line bg-white/4 text-muted",
-  );
 
-// Blocs
-export const alertError = "mb-[18px] rounded-[14px] border border-red-400/30 bg-red-400/10 px-[18px] py-3.5 text-[13px] text-danger";
-export const adminLoading = "px-5 py-[60px] text-center text-[13px] text-muted";
+// Blocs (le back-office a ses propres classes dans app/admin/adminUi.ts)
 export const contactBox = "rounded-2xl border border-purple/30 bg-purple/7 p-[22px]";
 export const dataTable = cx(
   "mt-[18px] w-full border-collapse text-xs xs:text-sm",
@@ -50,4 +35,3 @@ export const dataTable = cx(
   "[&_th]:border-b [&_th]:border-line [&_th]:px-2 [&_th]:py-2.5 [&_th]:text-left [&_th]:align-top [&_th]:text-[11px] [&_th]:uppercase [&_th]:tracking-[.08em] [&_th]:text-lavender",
   "xs:[&_td]:px-3.5 xs:[&_td]:py-[13px] xs:[&_th]:px-3.5 xs:[&_th]:py-[13px]",
 );
-export const fileDrop = "rounded-[14px] border border-dashed border-line p-4 text-center text-xs text-muted";

@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { getAdminEvent, type AdminRecord } from "@/lib/adminApi";
-import { adminLoading, alertError } from "@/lib/ui";
+import { alertError, loadingState } from "../../../adminUi";
 import EventForm, { type EventFormInitial } from "../../EventForm";
 
 export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +18,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       .finally(() => setIsLoading(false));
   }, [id]);
 
-  if (isLoading) return <div className={adminLoading}>Chargement...</div>;
+  if (isLoading) return <div className={loadingState}>Chargement...</div>;
   if (error || !event) return <div className={alertError}>{error ?? "Événement introuvable."}</div>;
 
   const initial: EventFormInitial = {

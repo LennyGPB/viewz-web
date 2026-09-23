@@ -27,6 +27,13 @@
   --color-brand-pale: #cdb8ff;
   --color-brand-from: #a765ff;
   --color-brand-to: #7133da;
+
+  /* Back-office : surfaces neutres, violet réservé aux actions */
+  --color-admin-bg: #0b0b0d;
+  --color-admin-surface: #121215;
+  --color-admin-raised: #18181c;
+  --color-accent: #7c4ce0;
+  --color-accent-hover: #6c3dd0;
 }
 
 /* ------------------------------------------------------------------ */

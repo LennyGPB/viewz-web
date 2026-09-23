@@ -41,6 +41,11 @@ export async function DELETE(request: NextRequest, ctx: { params: Promise<{ path
   return proxyToAdminApi(request, path);
 }
 
+export async function POST(request: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  const { path } = await ctx.params;
+  return proxyToAdminApi(request, path);
+}
+
 export async function PATCH(request: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
   return proxyToAdminApi(request, path);
