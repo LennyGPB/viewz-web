@@ -1,9 +1,8 @@
 import Image from "next/image";
 import { cx } from "@/lib/ui";
 
-// TODO : remplacer par les liens des fiches App Store / Google Play une fois publiées.
-const APP_STORE_URL = "#";
-const PLAY_STORE_URL = "#";
+const APP_STORE_URL = "https://apps.apple.com/us/app/viewz/id6807129457";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.hiden.viewz";
 
 // Badges officiels App Store / Google Play (hero et footer).
 export default function StoreBadges({ className, badgeClassName }: { className?: string; badgeClassName: string }) {

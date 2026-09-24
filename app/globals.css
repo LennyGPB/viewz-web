@@ -53,9 +53,17 @@
 @keyframes hero-z-scale{from{transform:scale(.88)}to{transform:none}}
 @keyframes hero-z-fade{to{opacity:0}}
 
-/* Hero : flèche « Défiler » */
-.scroll-bob{animation:scroll-bob 1.8s ease-in-out infinite}
-@keyframes scroll-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+/* Hero mobile : diaporama de 4 images, 1 s chacune. Même animation pour toutes,
+   décalée par des délais négatifs ; court fondu pour éviter un flash noir entre deux images. */
+.hero-slide{animation:hero-slide 4s linear infinite}
+.hero-slide:nth-child(2){animation-delay:-3s}
+.hero-slide:nth-child(3){animation-delay:-2s}
+.hero-slide:nth-child(4){animation-delay:-1s}
+@keyframes hero-slide{0%,25%{opacity:1}30%,95%{opacity:0}100%{opacity:1}}
+
+/* Hero : bandeau « ViewZ » qui défile en boucle (la piste contient 2 copies : -50 % = une copie) */
+.marquee-track{animation:marquee 36s linear infinite}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* Section fonctionnalités : les cartes tombent en cascade (l'inclinaison au repos est en Tailwind : rotate-*) */
 .domino-card{opacity:0;transform:translateY(48px) rotate(-7deg);transition:opacity .6s ease,transform .8s cubic-bezier(.22,1,.36,1),rotate .5s cubic-bezier(.22,1,.36,1)}

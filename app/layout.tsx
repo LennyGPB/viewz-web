@@ -18,11 +18,11 @@ const geistMono = Geist_Mono({
 const museoModerno = MuseoModerno({
   variable: "--font-museo-moderno",
   subsets: ["latin"],
-  weight: ["700", "800", "900"],
+  weight: ["100", "700", "800", "900"], // 100 : bandeau « ViewZ » du hero
 });
 
 export const metadata: Metadata = {
-  title: { default: "ViewZ — Informations légales", template: "%s — ViewZ" },
+  title: { default: "ViewZ : Le réseau des danseurs", template: "%s — ViewZ" },
   description: "Conditions générales d’utilisation et politique de confidentialité de ViewZ.",
 };
 
