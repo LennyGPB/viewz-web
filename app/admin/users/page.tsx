@@ -48,6 +48,7 @@ export default function AdminUsersPage() {
         />
       )}
       confirmLabel={(item) => `@${(item as UserItem).username}`}
+      getEditHref={(item) => `/admin/users/${item.id}/edit`}
       onSearch={setSearch}
       searchPlaceholder="Rechercher par pseudo ou email..."
     />

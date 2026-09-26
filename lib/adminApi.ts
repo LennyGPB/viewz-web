@@ -78,6 +78,10 @@ export const updateAdminDanceSpot = (id: string, payload: Record<string, unknown
 export const getAdminUsers = (search?: string) =>
   request<AdminRecord[]>(`/api/admin/users${search ? `?search=${encodeURIComponent(search)}` : ""}`);
 export const deleteAdminUser = (id: string) => request(`/api/admin/users/${id}`, { method: "DELETE" });
+export const getAdminUser = (id: string) => request<AdminRecord>(`/api/admin/users/${id}`);
+export const updateAdminUser = (id: string, payload: { username?: string; bio?: string | null; role?: UserRole }) =>
+  request<AdminRecord>(`/api/admin/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+export type UserRole = "USER" | "ORGANIZER" | "ADMIN";
 export type UserVerification = "DEFAULT" | "VERIFIED" | "OFFICIAL";
 export const updateAdminUserVerification = (id: string, verification: UserVerification) =>
   request<AdminRecord>(`/api/admin/users/${id}/verification`, { method: "PATCH", body: JSON.stringify({ verification }) });
