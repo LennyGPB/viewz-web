@@ -75,6 +75,9 @@ export const updateAdminDanceSpot = (id: string, payload: Record<string, unknown
 export const getAdminUsers = (search?: string) =>
   request<AdminRecord[]>(`/api/admin/users${search ? `?search=${encodeURIComponent(search)}` : ""}`);
 export const deleteAdminUser = (id: string) => request(`/api/admin/users/${id}`, { method: "DELETE" });
+export type UserVerification = "DEFAULT" | "VERIFIED" | "OFFICIAL";
+export const updateAdminUserVerification = (id: string, verification: UserVerification) =>
+  request<AdminRecord>(`/api/admin/users/${id}/verification`, { method: "PATCH", body: JSON.stringify({ verification }) });
 
 // --- Médias des profils ---
 export interface AdminUserMedia {
@@ -99,6 +102,14 @@ export interface AdminStats {
   users: number;
 }
 export const getAdminStats = () => request<AdminStats>("/api/admin/stats");
+
+// --- Notifications à tout le monde ---
+export const getBroadcastRecipients = () => request<{ count: number }>("/api/admin/notifications/recipients");
+export const sendBroadcastNotification = (title: string, body: string) =>
+  request<{ recipients: number }>("/api/admin/notifications/broadcast", {
+    method: "POST",
+    body: JSON.stringify({ title, body }),
+  });
 
 // --- Upload (présigné R2) ---
 export interface PresignedUpload {

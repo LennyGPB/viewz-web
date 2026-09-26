@@ -24,6 +24,7 @@ const NAV: { title?: string; items: { href: string; label: string; icon: AdminIc
     items: [
       { href: "/admin/users", label: "Utilisateurs", icon: "users" },
       { href: "/admin/user-media", label: "Médias des profils", icon: "image" },
+      { href: "/admin/notifications", label: "Notifications", icon: "bell" },
     ],
   },
   { title: "Réglages", items: [{ href: "/admin/styles", label: "Styles", icon: "tag" }] },
