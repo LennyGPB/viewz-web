@@ -52,6 +52,7 @@ export default function AdminPostsPage() {
         return `@${post.author?.username ?? "?"} · ${post.city ?? "Sans ville"}`;
       }}
       confirmLabel={(item) => (item as PostItem).title}
+      getEditHref={(item) => `/admin/posts/${item.id}/edit`}
       renderDetail={(item) => {
         const post = item as PostItem;
         return (

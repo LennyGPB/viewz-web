@@ -37,6 +37,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const getAdminPosts = (search?: string) =>
   request<AdminRecord[]>(`/api/admin/posts${search ? `?search=${encodeURIComponent(search)}` : ""}`);
 export const deleteAdminPost = (id: string) => request(`/api/admin/posts/${id}`, { method: "DELETE" });
+export const getAdminPost = (id: string) => request<AdminRecord>(`/api/admin/posts/${id}`);
+export const updateAdminPost = (id: string, payload: Record<string, unknown>) =>
+  request<AdminRecord>(`/api/admin/posts/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
 
 // --- Styles de danse (lus en base) ---
 export interface AdminStyle {
