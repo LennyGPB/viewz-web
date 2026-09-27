@@ -22,6 +22,8 @@ export const field = "flex flex-col gap-1.5";
 export const label = "text-[13px] font-medium text-lavender";
 export const input = "h-10 w-full rounded-lg border border-line bg-white/[.03] px-3 text-sm text-ink transition-colors placeholder:text-faint focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25";
 export const textarea = cx(input, "h-auto min-h-[120px] resize-y py-2.5 leading-relaxed");
+// Liste déroulante native : options sur fond noir (sinon blanc sur blanc).
+export const select = cx(input, "[color-scheme:dark] [&_option]:bg-black [&_option]:text-white");
 export const hint = "text-xs text-faint";
 export const chip = (active: boolean) =>
   cx(

@@ -30,6 +30,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     eventType: String(event.eventType ?? "AUTRE"),
     scheduleType: String(event.scheduleType ?? "SPECIFIC"),
     eventDate: (event.eventDate as string | null) ?? null,
+    endDate: (event.endDate as string | null) ?? null,
     recurrenceDays: (event.recurrenceDays as number[] | undefined) ?? [],
     recurrenceTime: (event.recurrenceTime as string | null) ?? null,
     price: (event.price as number | null) ?? null,

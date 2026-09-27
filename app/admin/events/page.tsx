@@ -18,6 +18,7 @@ interface EventItem {
   image?: string | null;
   city?: string | null;
   eventDate?: string | null;
+  endDate?: string | null;
   eventType: string;
   scheduleType: string;
   recurrenceDays?: number[];
@@ -29,7 +30,7 @@ interface EventItem {
 // Mêmes types et libellés que les filtres de l'app.
 const EVENT_TYPES: [string, string][] = [
   ["COURS_DE_DANSE", "Cours"], ["BATTLE", "Battle"], ["SPECTACLE", "Spectacle"], ["TOURNAGE", "Tournage"],
-  ["SOIREE", "Soirée"], ["STAGE", "Stage"], ["WORKSHOP", "Workshop"], ["FESTIVAL", "Festival"], ["AUTRE", "Autre"],
+  ["SOIREE", "Soirée"], ["STAGE", "Stage"], ["WORKSHOP", "Workshop"], ["FESTIVAL", "Festival"], ["CONCERT", "Concert"], ["AUTRE", "Autre"],
 ];
 const TYPE_LABELS = Object.fromEntries(EVENT_TYPES);
 const DAY_NAMES = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
@@ -40,8 +41,11 @@ const startOfToday = () => {
   return date;
 };
 
-// Même règle que l'app : passé une fois sa journée terminée, jamais pour un récurrent.
-const isPast = (event: EventItem) => Boolean(event.eventDate) && new Date(event.eventDate!) < startOfToday();
+// Même règle que l'app : passé une fois sa (dernière) journée terminée, jamais pour un récurrent.
+const isPast = (event: EventItem) => {
+  const lastDay = event.endDate ?? event.eventDate;
+  return Boolean(lastDay) && new Date(lastDay!) < startOfToday();
+};
 
 const scheduleLabel = (event: EventItem) => {
   if (event.scheduleType === "RECURRING") {
@@ -49,6 +53,10 @@ const scheduleLabel = (event: EventItem) => {
     return `Tous les ${days}${event.recurrenceTime ? ` à ${event.recurrenceTime}` : ""}`;
   }
   if (!event.eventDate) return "Date à venir";
+  if (event.scheduleType === "RANGE" && event.endDate) {
+    const format = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { dateStyle: "medium" });
+    return `Du ${format(event.eventDate)} au ${format(event.endDate)}`;
+  }
   return new Date(event.eventDate).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 };
 

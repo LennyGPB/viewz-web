@@ -8,7 +8,7 @@ import AdminHeading from "../AdminHeading";
 import AdminIcon from "../AdminIcon";
 import PlacesInput from "../PlacesInput";
 import {
-  alertError, btnPrimary, btnSecondary, field, fileInput, formSection, formSectionTitle, hint, input, label, textarea,
+  alertError, btnPrimary, btnSecondary, field, fileInput, formSection, formSectionTitle, hint, input, label, select, textarea,
 } from "../adminUi";
 
 const SPOT_TYPES = ["STUDIO", "PARC", "SALLE", "RUE", "AUTRE"];
@@ -155,7 +155,7 @@ export default function DanceSpotForm({ spotId, initial }: DanceSpotFormProps) {
             </div>
             <div className={field}>
               <label htmlFor="type" className={label}>Type</label>
-              <select id="type" className={input} value={type} onChange={(e) => setType(e.target.value)}>
+              <select id="type" className={select} value={type} onChange={(e) => setType(e.target.value)}>
                 {SPOT_TYPES.map((t) => <option key={t} value={t}>{SPOT_TYPE_LABELS[t] ?? t}</option>)}
               </select>
             </div>

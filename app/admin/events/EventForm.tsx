@@ -7,15 +7,15 @@ import { createEvent, updateAdminEvent, getAdminStyles, getPresignedUpload, uplo
 import AdminHeading from "../AdminHeading";
 import PlacesInput from "../PlacesInput";
 import {
-  alertError, btnPrimary, btnSecondary, chip, cx, field, fileInput, formSection, formSectionTitle, hint, input, label, textarea,
+  alertError, btnPrimary, btnSecondary, chip, cx, field, fileInput, formSection, formSectionTitle, hint, input, label, select, textarea,
 } from "../adminUi";
 
 const EVENT_TYPES = [
-  "COURS_DE_DANSE", "BATTLE", "SPECTACLE", "TOURNAGE", "SOIREE", "STAGE", "WORKSHOP", "FESTIVAL", "AUTRE",
+  "COURS_DE_DANSE", "BATTLE", "SPECTACLE", "TOURNAGE", "SOIREE", "STAGE", "WORKSHOP", "FESTIVAL", "CONCERT", "AUTRE",
 ];
 const EVENT_TYPE_LABELS: Record<string, string> = {
   COURS_DE_DANSE: "Cours de danse", BATTLE: "Battle", SPECTACLE: "Spectacle", TOURNAGE: "Tournage",
-  SOIREE: "Soirée", STAGE: "Stage", WORKSHOP: "Workshop", FESTIVAL: "Festival", AUTRE: "Autre",
+  SOIREE: "Soirée", STAGE: "Stage", WORKSHOP: "Workshop", FESTIVAL: "Festival", CONCERT: "Concert", AUTRE: "Autre",
 };
 const DAYS = [
   { value: 1, label: "Lun" }, { value: 2, label: "Mar" }, { value: 3, label: "Mer" },
@@ -31,6 +31,7 @@ export interface EventFormInitial {
   eventType: string;
   scheduleType: string;
   eventDate?: string | null;
+  endDate?: string | null;
   recurrenceDays?: number[];
   recurrenceTime?: string | null;
   price?: number | null;
@@ -44,6 +45,10 @@ interface EventFormProps {
   eventId?: string;
   initial?: EventFormInitial;
 }
+
+type ScheduleType = "SPECIFIC" | "RANGE" | "RECURRING";
+
+const toDateInput = (iso?: string | null) => toDatetimeLocal(iso).slice(0, 10);
 
 const toDatetimeLocal = (iso?: string | null) => {
   if (!iso) return "";
@@ -62,10 +67,13 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
   const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
   const [longitude, setLongitude] = useState<number | null>(initial?.longitude ?? null);
   const [eventType, setEventType] = useState(initial?.eventType ?? "AUTRE");
-  const [scheduleType, setScheduleType] = useState<"SPECIFIC" | "RECURRING">(
-    (initial?.scheduleType as "SPECIFIC" | "RECURRING") ?? "SPECIFIC",
+  const [scheduleType, setScheduleType] = useState<ScheduleType>(
+    (initial?.scheduleType as ScheduleType) ?? "SPECIFIC",
   );
   const [eventDate, setEventDate] = useState(toDatetimeLocal(initial?.eventDate));
+  // Période : jours entiers, sans heure.
+  const [rangeStart, setRangeStart] = useState(toDateInput(initial?.eventDate));
+  const [rangeEnd, setRangeEnd] = useState(toDateInput(initial?.endDate));
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>(initial?.recurrenceDays ?? []);
   const [recurrenceTime, setRecurrenceTime] = useState(initial?.recurrenceTime ?? "");
   const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : "");
@@ -113,6 +121,14 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
       setError("La date est requise pour un événement ponctuel.");
       return;
     }
+    if (scheduleType === "RANGE" && (!rangeStart || !rangeEnd)) {
+      setError("Les dates de début et de fin sont requises pour une période.");
+      return;
+    }
+    if (scheduleType === "RANGE" && rangeEnd < rangeStart) {
+      setError("La date de fin doit être après la date de début.");
+      return;
+    }
     if (scheduleType === "RECURRING" && (recurrenceDays.length === 0 || !recurrenceTime)) {
       setError("Jours et heure de récurrence requis pour un événement récurrent.");
       return;
@@ -142,7 +158,9 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
         longitude: longitude ?? undefined,
         eventType,
         scheduleType,
-        eventDate: scheduleType === "SPECIFIC" ? new Date(eventDate).toISOString() : undefined,
+        eventDate: scheduleType === "SPECIFIC" ? new Date(eventDate).toISOString()
+          : scheduleType === "RANGE" ? new Date(`${rangeStart}T00:00`).toISOString() : undefined,
+        endDate: scheduleType === "RANGE" ? new Date(`${rangeEnd}T00:00`).toISOString() : undefined,
         recurrenceDays: scheduleType === "RECURRING" ? recurrenceDays : undefined,
         recurrenceTime: scheduleType === "RECURRING" ? recurrenceTime : undefined,
         price: price ? Number(price) : undefined,
@@ -195,7 +213,7 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
 
           <div className={field}>
             <label htmlFor="eventType" className={label}>Type</label>
-            <select id="eventType" className={input} value={eventType} onChange={(e) => setEventType(e.target.value)}>
+            <select id="eventType" className={select} value={eventType} onChange={(e) => setEventType(e.target.value)}>
               {EVENT_TYPES.map((type) => (
                 <option key={type} value={type}>{EVENT_TYPE_LABELS[type] ?? type}</option>
               ))}
@@ -231,6 +249,7 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
             <span className={label}>Périodicité</span>
             <div className="flex flex-wrap gap-2">
               <button type="button" className={chip(scheduleType === "SPECIFIC")} onClick={() => setScheduleType("SPECIFIC")}>Date unique</button>
+              <button type="button" className={chip(scheduleType === "RANGE")} onClick={() => setScheduleType("RANGE")}>Période</button>
               <button type="button" className={chip(scheduleType === "RECURRING")} onClick={() => setScheduleType("RECURRING")}>Récurrent</button>
             </div>
           </div>
@@ -239,6 +258,17 @@ export default function EventForm({ eventId, initial }: EventFormProps) {
             <div className={field}>
               <label htmlFor="eventDate" className={label}>Date et heure</label>
               <input id="eventDate" className={cx(input, "sm:max-w-[260px]")} type="datetime-local" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+            </div>
+          ) : scheduleType === "RANGE" ? (
+            <div className="flex flex-col gap-5 sm:flex-row">
+              <div className={field}>
+                <label htmlFor="rangeStart" className={label}>Du</label>
+                <input id="rangeStart" className={cx(input, "sm:w-[200px]")} type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} />
+              </div>
+              <div className={field}>
+                <label htmlFor="rangeEnd" className={label}>Au</label>
+                <input id="rangeEnd" className={cx(input, "sm:w-[200px]")} type="date" min={rangeStart || undefined} value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} />
+              </div>
             </div>
           ) : (
             <>
