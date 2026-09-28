@@ -6,6 +6,9 @@
   --font-display: var(--font-museo-moderno), Arial, sans-serif;
 }
 
+/* Écrans peu hauts (portables 1366×768…) : le dossier /presentation se compacte */
+@custom-variant short (@media (max-height: 820px));
+
 @theme {
   --breakpoint-xs: 30rem; /* 480px */
   --breakpoint-lg: 56.25rem; /* 900px : bascule mobile / desktop du hero et de la navbar */
@@ -71,3 +74,99 @@
 .domino-grid .domino-card:nth-child(2){transition-delay:.15s,.15s,0s}
 .domino-grid .domino-card:nth-child(3){transition-delay:.3s,.3s,0s}
 .domino-grid .domino-card:nth-child(4){transition-delay:.45s,.45s,0s}
+
+/* ------------------------------------------------------------------ */
+/* Présentation (/presentation) : dossier interactif                   */
+/* ------------------------------------------------------------------ */
+
+/* Slides empilées : data-state = past | active | future. Celles d'avant sortent à
+   gauche, celles d'après attendent à droite, donc le mouvement suit le sens de lecture.
+   L'état actif repasse à filter:none pour ne pas casser les backdrop-blur enfants. */
+.deck-slide{transition:opacity .7s ease,transform 1s cubic-bezier(.22,1,.36,1),filter .7s ease}
+.deck-slide[data-state=past]{opacity:0;transform:translateX(-7%) scale(.97);filter:blur(14px)}
+.deck-slide[data-state=future]{opacity:0;transform:translateX(7%) scale(.97);filter:blur(14px)}
+.deck-slide[data-state=active]{filter:none}
+
+/* Éléments qui entrent en cascade : --d = rang dans la cascade (style inline) */
+.deck-reveal{opacity:0;transform:translateY(28px);filter:blur(8px);transition:opacity .4s ease,transform .4s ease,filter .4s ease}
+.deck-slide[data-state=active] .deck-reveal{opacity:1;transform:none;filter:none;transition:opacity .8s ease calc(var(--d,0)*90ms + .3s),transform 1s cubic-bezier(.22,1,.36,1) calc(var(--d,0)*90ms + .3s),filter .8s ease calc(var(--d,0)*90ms + .3s)}
+
+/* Titres : chaque ligne monte depuis un masque */
+.deck-mask{display:block;overflow:hidden;padding-bottom:.1em;margin-bottom:-.1em}
+.deck-mask>span{display:block;transform:translateY(115%) skewY(7deg);transform-origin:left;transition:transform .45s ease}
+.deck-slide[data-state=active] .deck-mask>span{transform:none;transition:transform 1.1s cubic-bezier(.19,1,.22,1) calc(var(--d,0)*90ms + .2s)}
+
+/* Trait qui se dessine (frise « Comment ça marche », horizontale ou verticale) */
+.deck-draw{clip-path:inset(0 100% 100% 0);transition:clip-path .3s ease}
+.deck-slide[data-state=active] .deck-draw{clip-path:inset(0);transition:clip-path 1.1s cubic-bezier(.65,0,.35,1) .3s}
+
+/* Fonds : fondu enchaîné + lent zoom arrière sur l'image active */
+.deck-bg{opacity:0;transition:opacity 1.2s ease}
+.deck-bg[data-active=true]{opacity:1}
+.deck-bg[data-active=true] img{animation:deck-kenburns 16s cubic-bezier(.22,1,.36,1) both}
+@keyframes deck-kenburns{from{transform:scale(1.14)}to{transform:scale(1)}}
+
+/* Balayage lumineux qui traverse l'écran à chaque changement de slide */
+.deck-sweep{animation:deck-sweep 1s cubic-bezier(.65,0,.35,1) both}
+.deck-sweep[data-dir=back]{animation-name:deck-sweep-back}
+@keyframes deck-sweep{from{transform:translateX(-100%)}to{transform:translateX(100vw)}}
+@keyframes deck-sweep-back{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+
+/* Compteur : glitch chromatique (mêmes couleurs que les photos) quand il change */
+.deck-glitch{animation:deck-glitch .5s steps(3) both}
+@keyframes deck-glitch{0%{opacity:0;transform:translateX(-5px);text-shadow:3px 0 #ff2bd6,-3px 0 #4d5bff}35%{opacity:1;transform:translateX(4px) skewX(-8deg)}70%{transform:translateX(-2px);text-shadow:-2px 0 #ff2bd6,2px 0 #4d5bff}100%{transform:none;text-shadow:none}}
+
+
+/* Bordure dégradée qui tourne autour du QR code */
+.deck-spin{animation:deck-spin 5s linear infinite}
+@keyframes deck-spin{to{transform:rotate(1turn)}}
+
+/* Grain argentique par-dessus tout le diaporama */
+.deck-grain{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:deck-grain 1s steps(4) infinite}
+@keyframes deck-grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(0,0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .deck-slide,.deck-reveal,.deck-mask>span,.deck-draw,.deck-bg{transition-duration:.01ms!important;transition-delay:0s!important}
+  .deck-spin,.deck-grain,.deck-glitch,.deck-bg img{animation:none!important}
+  .deck-sweep{display:none}
+}
+
+/* Téléphone de la slide 2 : la nouvelle capture arrive en fondu avec un léger dézoom,
+   pendant que le téléphone pulse (2 noms identiques pour relancer l'animation en alternant). */
+.deck-screen{opacity:0;transform:scale(1.08);filter:blur(6px);transition:opacity .7s ease,transform 1s cubic-bezier(.22,1,.36,1),filter .7s ease}
+.deck-screen[data-active=true]{opacity:1;transform:none;filter:none}
+.deck-phone-bump-a{animation:deck-phone-bump-a .7s cubic-bezier(.22,1,.36,1)}
+.deck-phone-bump-b{animation:deck-phone-bump-b .7s cubic-bezier(.22,1,.36,1)}
+@keyframes deck-phone-bump-a{35%{transform:scale(.96) rotate(-1.5deg);box-shadow:0 50px 160px -20px rgba(169,112,255,1)}}
+@keyframes deck-phone-bump-b{35%{transform:scale(.96) rotate(-1.5deg);box-shadow:0 50px 160px -20px rgba(169,112,255,1)}}
+/* Animations réduites : on garde seulement le fondu entre les écrans */
+@media (prefers-reduced-motion:reduce){.deck-screen{transform:none;filter:none}.deck-phone-bump-a,.deck-phone-bump-b{animation:none!important}}
+
+/* Frise « Comment ça marche » : apparition du point à chaque départ de boucle */
+.deck-dot-in>span{animation:deck-dot-in .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes deck-dot-in{from{opacity:0;scale:0}to{opacity:1;scale:1}}
+
+/* Lecteur de la Scène ViewZ (slide 4) : barre de lecture de chaque format (3 s, cf. FORMAT_DURATION) */
+.deck-progress{transform-origin:left;animation:deck-progress 3s linear both}
+@keyframes deck-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Cartes « Ce que propose ViewZ » (slide 3) : ouverture / fermeture animée par les View
+   Transitions (withTransition dans slides.tsx), chaque carte ayant son nom feature-0…5.
+   Effet « morph » : le cadre de la carte glisse et se redimensionne (fond + bordure sur
+   l'image-pair), l'ancien contenu s'efface vite puis le nouveau apparaît, sans être étiré. */
+::view-transition-group(feature-0),::view-transition-group(feature-1),::view-transition-group(feature-2),
+::view-transition-group(feature-3),::view-transition-group(feature-4),::view-transition-group(feature-5){animation-duration:.3s;animation-timing-function:ease-in-out}
+::view-transition-image-pair(feature-0),::view-transition-image-pair(feature-1),::view-transition-image-pair(feature-2),
+::view-transition-image-pair(feature-3),::view-transition-image-pair(feature-4),::view-transition-image-pair(feature-5){overflow:hidden;border-radius:24px;background:rgba(18,14,27,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+::view-transition-old(feature-0),::view-transition-old(feature-1),::view-transition-old(feature-2),
+::view-transition-old(feature-3),::view-transition-old(feature-4),::view-transition-old(feature-5){width:auto;height:auto;inset:0 auto auto 0;object-fit:none;animation:deck-vt-out .1s ease both}
+::view-transition-new(feature-0),::view-transition-new(feature-1),::view-transition-new(feature-2),
+::view-transition-new(feature-3),::view-transition-new(feature-4),::view-transition-new(feature-5){width:auto;height:auto;inset:0 auto auto 0;object-fit:none;animation:deck-vt-in .2s ease .12s both}
+@keyframes deck-vt-out{to{opacity:0}}
+@keyframes deck-vt-in{from{opacity:0}}
+
+/* Contenu de la carte ouverte : apparaît en fondu une fois la carte agrandie */
+.deck-feature-in{animation:deck-feature-in .4s ease .2s both}
+@keyframes deck-feature-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.deck-feature-in{animation:deck-feature-fade .3s ease both}}
+@keyframes deck-feature-fade{from{opacity:0}to{opacity:1}}
