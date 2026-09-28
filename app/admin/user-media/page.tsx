@@ -22,7 +22,7 @@ interface OpenMedia {
 const mediaOf = (user: AdminUserMedia) => [
   ...(user.profilePic ? [{ url: user.profilePic, kind: "Photo de profil" as const }] : []),
   ...user.profilePhotos.map((url) => ({ url, kind: "Photo" as const })),
-  ...(user.videoUrl ? [{ url: user.videoUrl, kind: "Vidéo" as const }] : []),
+  ...user.profileVideos.map((url) => ({ url, kind: "Vidéo" as const })),
 ];
 
 export default function AdminUserMediaPage() {
@@ -69,7 +69,7 @@ export default function AdminUserMediaPage() {
           .map((u) => u.id !== user.id ? u : {
             ...u,
             profilePic: u.profilePic === url ? null : u.profilePic,
-            videoUrl: u.videoUrl === url ? null : u.videoUrl,
+            profileVideos: u.profileVideos.filter((video) => video !== url),
             profilePhotos: u.profilePhotos.filter((photo) => photo !== url),
           })
           .filter((u) => mediaOf(u).length > 0),

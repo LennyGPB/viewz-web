@@ -23,6 +23,7 @@ const NAV: { title?: string; items: { href: string; label: string; icon: AdminIc
     title: "Communauté",
     items: [
       { href: "/admin/users", label: "Utilisateurs", icon: "users" },
+      { href: "/admin/organizer-requests", label: "Demandes organisateur", icon: "badgeCheck" },
       { href: "/admin/user-media", label: "Médias des profils", icon: "image" },
       { href: "/admin/notifications", label: "Notifications", icon: "bell" },
     ],

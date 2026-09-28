@@ -86,13 +86,33 @@ export type UserVerification = "DEFAULT" | "VERIFIED" | "OFFICIAL";
 export const updateAdminUserVerification = (id: string, verification: UserVerification) =>
   request<AdminRecord>(`/api/admin/users/${id}/verification`, { method: "PATCH", body: JSON.stringify({ verification }) });
 
+// --- Demandes organisateur ---
+export type OrganizerRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
+export interface AdminOrganizerRequest {
+  id: string;
+  orgName: string;
+  city: string;
+  message: string;
+  link: string | null;
+  eventTypes: string[];
+  status: OrganizerRequestStatus;
+  createdAt: string;
+  user: { id: string; username: string; email: string; profilePic: string | null; role: UserRole };
+}
+export const getAdminOrganizerRequests = (status?: OrganizerRequestStatus) =>
+  request<AdminOrganizerRequest[]>(`/api/admin/organizer-requests${status ? `?status=${status}` : ""}`);
+export const approveAdminOrganizerRequest = (id: string) =>
+  request<AdminOrganizerRequest & { messageSent: boolean }>(`/api/admin/organizer-requests/${id}/approve`, { method: "POST" });
+export const rejectAdminOrganizerRequest = (id: string) =>
+  request<AdminOrganizerRequest>(`/api/admin/organizer-requests/${id}/reject`, { method: "POST" });
+
 // --- Médias des profils ---
 export interface AdminUserMedia {
   id: string;
   username: string;
   updatedAt: string;
   profilePic: string | null;
-  videoUrl: string | null;
+  profileVideos: string[];
   profilePhotos: string[];
 }
 export const getAdminUserMedia = (search?: string) =>
