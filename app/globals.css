@@ -150,23 +150,8 @@
 .deck-progress{transform-origin:left;animation:deck-progress 3s linear both}
 @keyframes deck-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
-/* Cartes « Ce que propose ViewZ » (slide 3) : ouverture / fermeture animée par les View
-   Transitions (withTransition dans slides.tsx), chaque carte ayant son nom feature-0…5.
-   Effet « morph » : le cadre de la carte glisse et se redimensionne (fond + bordure sur
-   l'image-pair), l'ancien contenu s'efface vite puis le nouveau apparaît, sans être étiré. */
-::view-transition-group(feature-0),::view-transition-group(feature-1),::view-transition-group(feature-2),
-::view-transition-group(feature-3),::view-transition-group(feature-4),::view-transition-group(feature-5){animation-duration:.3s;animation-timing-function:ease-in-out}
-::view-transition-image-pair(feature-0),::view-transition-image-pair(feature-1),::view-transition-image-pair(feature-2),
-::view-transition-image-pair(feature-3),::view-transition-image-pair(feature-4),::view-transition-image-pair(feature-5){overflow:hidden;border-radius:24px;background:rgba(18,14,27,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-::view-transition-old(feature-0),::view-transition-old(feature-1),::view-transition-old(feature-2),
-::view-transition-old(feature-3),::view-transition-old(feature-4),::view-transition-old(feature-5){width:auto;height:auto;inset:0 auto auto 0;object-fit:none;animation:deck-vt-out .1s ease both}
-::view-transition-new(feature-0),::view-transition-new(feature-1),::view-transition-new(feature-2),
-::view-transition-new(feature-3),::view-transition-new(feature-4),::view-transition-new(feature-5){width:auto;height:auto;inset:0 auto auto 0;object-fit:none;animation:deck-vt-in .2s ease .12s both}
-@keyframes deck-vt-out{to{opacity:0}}
-@keyframes deck-vt-in{from{opacity:0}}
-
-/* Contenu de la carte ouverte : apparaît en fondu une fois la carte agrandie */
-.deck-feature-in{animation:deck-feature-in .4s ease .2s both}
+/* Contenu de la carte ouverte : monte en fondu une fois la carte qui vole arrivée (FEATURE_MOVE = .4s dans slides.tsx) */
+.deck-feature-in{animation:deck-feature-in .3s ease .4s both}
 @keyframes deck-feature-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.deck-feature-in{animation:deck-feature-fade .3s ease both}}
 @keyframes deck-feature-fade{from{opacity:0}to{opacity:1}}

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Formulaire de contact : envoi Telegram impossible", error);
     return NextResponse.json(
-      { message: "L’envoi est temporairement indisponible. Écris-nous à gleam-pro@proton.me." },
+      { message: "L’envoi est temporairement indisponible. Écris-nous à viewz-app@pm.me." },
       { status: 503 },
     );
   }

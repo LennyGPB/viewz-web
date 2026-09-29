@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { container, cx } from "@/lib/ui";
+import DownloadSheet from "./components/DownloadSheet";
 import Features from "./components/Features";
 import StoreBadges from "./components/StoreBadges";
 
@@ -44,11 +45,18 @@ export default function Home() {
           aria-hidden="true"
         />
 
-        <div className={cx(container, "relative z-2 flex flex-col items-center pt-[120px] pb-[114px] text-center lg:items-start lg:pb-[140px] lg:text-left")}>
-          <h1 className="font-display leading-none text-white lg:mb-9">
+        {/* Mobile : grille 3 colonnes ; le sous-titre et le bouton partagent la colonne du milieu
+            (le bouton prend donc exactement la largeur du sous-titre), « ViewZ » s'étend sur les 3. */}
+        <div
+          className={cx(
+            container,
+            "relative z-2 grid grid-cols-[1fr_auto_1fr] pt-[120px] pb-16 text-center lg:flex lg:flex-col lg:items-start lg:pb-[140px] lg:text-left",
+          )}
+        >
+          <h1 className="col-span-3 grid grid-cols-subgrid font-display leading-none text-white lg:mb-9 lg:block">
             {/* Reprend l'intro du SplashScreen de l'app : le logo glisse à la
                 place du Z pendant que « View » apparaît, glitch, puis le Z le remplace. */}
-            <span className="block pr-[.05em] text-[clamp(72px,24vw,120px)] font-black leading-[.95] tracking-[-.065em] lg:-ml-[.16em] lg:text-[clamp(72px,10vw,160px)]">
+            <span className="col-span-3 block justify-self-center pr-[.05em] lg:justify-self-auto text-[clamp(72px,24vw,120px)] font-black leading-[.95] tracking-[-.065em] lg:-ml-[.16em] lg:text-[clamp(72px,10vw,160px)]">
               <span className="hero-view">View</span>
               <span className="relative inline-block">
                 <span className="hero-z">Z</span>
@@ -59,22 +67,23 @@ export default function Home() {
                 </span>
               </span>
             </span>
-            <span className="-mt-2 block font-sans italic lg:-mt-[17px] text-[clamp(18px,2.2vw,34px)] leading-[1.1] tracking-wide">
+            <span className="col-start-2 -mt-2 block font-sans italic lg:-mt-[17px] text-[clamp(18px,2.2vw,34px)] leading-[1.1] tracking-wide">
               Le premier réseau pour les danseurs
             </span>
           </h1>
 
-          {/* Desktop : badges sous le titre. En mobile, ils sont en bas du hero (au-dessus de « Défiler »). */}
+          {/* Mobile : un bouton qui ouvre le choix du store en feuille du bas */}
+          <div className="col-start-2 mt-6 lg:hidden">
+            <DownloadSheet className="w-full justify-center" />
+          </div>
+
+          {/* Desktop : badges sous le titre */}
           <div className="hidden lg:block">
             <StoreBadges className="justify-start gap-3.5" badgeClassName="h-14" />
           </div>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-2 flex flex-col items-center gap-6">
-          <div className="lg:hidden">
-            <StoreBadges className="justify-center gap-2.5 xs:gap-3.5" badgeClassName="h-12 xs:h-14" />
-          </div>
-
           {/* Bandeau « ViewZ » en boucle, bord à bord (deux copies identiques décalées de 50 % pour une boucle sans saut). */}
           <a href="#fonctionnalites" aria-label="Voir les fonctionnalités" className="block w-full overflow-hidden no-underline">
             <div className="marquee-track flex w-max" aria-hidden="true">

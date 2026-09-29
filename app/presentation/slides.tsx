@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { btnGradient, container, cx, eyebrow } from "@/lib/ui";
 import StoreBadges from "../components/StoreBadges";
@@ -252,21 +252,21 @@ const FEATURES: Feature[] = [
     title: "Messagerie",
     description: "Messagerie privée entre danseurs.",
     details:
-      "Quand un danseur répond à ton annonce, une conversation privée s’ouvre automatiquement. Tu peux discuter, organiser une session, partager des infos. La carte de l’annonce apparaît en premier message pour garder le contexte.",
+      "Réponds à une annonce directement depuis le feed, une conversation privée s’ouvre automatiquement avec l’annonce en contexte. Tu peux aussi découvrir les profils des autres danseurs et leur envoyer un message à tout moment.",
     icon: <svg {...iconProps}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" /></svg>,
   },
   {
     title: "Carte interactive",
     description: "Danseurs et spots de danse à proximité.",
     details:
-      "Une carte en temps réel qui affiche les danseurs et les spots de danse autour de toi. Les danseurs apparaissent en violet, les spots en rose. Tu peux filtrer par style ou par type de spot (studio, parc, salle, rue).",
+      "Une carte en temps réel qui affiche les danseurs et les spots de danse autour de toi. Vois qui danse près de toi, découvre les spots disponibles, et crée une session pour inviter d’autres danseurs à te rejoindre.",
     icon: <svg {...iconProps}><path d="m9 3-6 3v15l6-3 6 3 6-3V3l-6 3-6-3Z" /><path d="M9 3v15M15 6v15" /></svg>,
   },
   {
     title: "Statut en temps réel",
     description: "Voir qui danse maintenant.",
     details:
-      "Tu actives le statut « Je danse maintenant » et tu apparais sur la carte avec ta localisation. Les autres danseurs près de toi te voient en direct et peuvent te rejoindre ou t’envoyer un message. Le statut expire automatiquement après quelques heures.",
+      "Tu actives le statut « Je danse maintenant » et tu apparais sur la carte avec ta localisation. Les autres danseurs près de toi te voient en direct et peuvent te rejoindre ou t’envoyer un message. Le statut expire automatiquement selon la durée que tu as définie.",
     live: true,
     icon: <svg {...iconProps}><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" /></svg>,
   },
@@ -293,15 +293,42 @@ const followPointer = (event: React.PointerEvent<HTMLElement>) => {
   event.currentTarget.style.setProperty("--y", `${event.clientY - rect.top}px`);
 };
 
-// Changement de disposition animé par le navigateur (View Transitions, réglages dans
-// globals.css) ; sans support ou avec animations réduites, le changement est immédiat.
-const withTransition = (update: () => void) => {
-  if (!("startViewTransition" in document) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    update();
-    return;
-  }
-  document.startViewTransition(() => flushSync(update));
-};
+// Ouverture d'une carte animée à la main (FLIP) : on mesure les cartes avant et après
+// le changement, puis chacune glisse de son ancienne place vers la nouvelle.
+const FEATURE_MOVE = 400; // ms : trajet de la carte
+const FEATURE_FADE = 180; // ms : fondu vers le grand bloc, une fois la carte arrivée
+const FEATURE_EASE = "cubic-bezier(.65,0,.25,1)";
+const ARRIVAL = FEATURE_MOVE / (FEATURE_MOVE + FEATURE_FADE); // moment de l'arrivée (0 → 1)
+
+// Copie de la carte cliquée qui « vole » jusqu'au grand bloc ; une fois arrivée,
+// elle s'efface pendant que le grand bloc apparaît dessous.
+function flyGhost(card: HTMLElement, from: DOMRect, to: DOMRect) {
+  const ghost = card.cloneNode(true) as HTMLElement;
+  ghost.setAttribute("aria-hidden", "true");
+  ghost.removeAttribute("id");
+  Object.assign(ghost.style, {
+    position: "fixed",
+    left: "0",
+    top: "0",
+    margin: "0",
+    zIndex: "60",
+    pointerEvents: "none",
+    background: "rgba(18,14,27,.96)",
+    borderColor: "rgba(169,112,255,.7)",
+    boxShadow: "0 30px 90px -20px rgba(155,92,255,.8)",
+  });
+  document.body.appendChild(ghost);
+  const box = (rect: DOMRect) => ({ left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` });
+  const flight = ghost.animate(
+    [
+      { ...box(from), opacity: 1, easing: FEATURE_EASE },
+      { ...box(to), opacity: 1, offset: ARRIVAL, easing: "ease" },
+      { ...box(to), opacity: 0 },
+    ],
+    { duration: FEATURE_MOVE + FEATURE_FADE, fill: "forwards" },
+  );
+  flight.onfinish = flight.oncancel = () => ghost.remove();
+}
 
 function LiveBadge() {
   return (
@@ -318,17 +345,53 @@ function LiveBadge() {
 function FeatureGrid({ active }: { active: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
   const list = useRef<HTMLUListElement>(null);
+  const items = useRef<(HTMLLIElement | null)[]>([]);
 
-  const select = (index: number | null) => withTransition(() => setOpen(index));
+  // Joué même avec « réduire les animations » : c'est lui qui montre d'où vient le grand bloc
+  const select = useCallback((index: number | null) => {
+    const before = items.current.map((item) => item?.getBoundingClientRect() ?? null);
+    const clicked = index === null ? null : (items.current[index]?.firstElementChild as HTMLElement | null);
+    flushSync(() => setOpen(index));
+
+    // Mobile : la carte ouverte passe en tête de grille ; si elle est sortie de l'écran
+    // (grille défilée), on remonte la slide pour l'amener sous la barre du haut.
+    const opened = index === null ? null : items.current[index];
+    const scroller = opened?.closest("section");
+    if (opened && scroller && !window.matchMedia("(min-width: 900px)").matches) {
+      const offset = opened.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 96;
+      if (offset < 0) scroller.scrollTop += offset;
+    }
+
+    items.current.forEach((item, i) => {
+      const from = before[i];
+      if (!item || !from) return;
+      const to = item.getBoundingClientRect();
+      if (i === index) {
+        // Le grand bloc se dévoile à l'arrivée de la carte qui vole
+        if (clicked) flyGhost(clicked, from, to);
+        item.animate([{ opacity: 0 }, { opacity: 0, offset: ARRIVAL, easing: "ease" }, { opacity: 1 }], { duration: FEATURE_MOVE + FEATURE_FADE });
+        return;
+      }
+      const dx = from.left - to.left;
+      const dy = from.top - to.top;
+      const resized = Math.abs(from.width - to.width) > 1 || Math.abs(from.height - to.height) > 1;
+      if (!dx && !dy && !resized) return;
+      // Les autres cartes glissent vers leur nouvelle place (fondu si elles changent de taille)
+      item.animate(
+        [{ transform: `translate(${dx}px, ${dy}px)`, opacity: resized ? 0 : 1 }, { transform: "none", opacity: 1 }],
+        { duration: FEATURE_MOVE, easing: FEATURE_EASE },
+      );
+    });
+  }, []);
 
   // Fermeture : clic en dehors de la grille ou Échap
   useEffect(() => {
     if (open === null) return;
     const onPointer = (event: PointerEvent) => {
-      if (!list.current?.contains(event.target as Node)) withTransition(() => setOpen(null));
+      if (!list.current?.contains(event.target as Node)) select(null);
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") withTransition(() => setOpen(null));
+      if (event.key === "Escape") select(null);
     };
     document.addEventListener("pointerdown", onPointer);
     document.addEventListener("keydown", onKey);
@@ -336,7 +399,7 @@ function FeatureGrid({ active }: { active: boolean }) {
       document.removeEventListener("pointerdown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, select]);
 
   // En quittant la slide, la carte ouverte se referme
   useEffect(() => {
@@ -359,12 +422,15 @@ function FeatureGrid({ active }: { active: boolean }) {
         return (
           <li
             key={feature.title}
+            ref={(el) => {
+              items.current[i] = el;
+            }}
             className={cx(
               "deck-reveal",
               expanded && "order-first col-span-2 lg:order-none lg:col-start-1 lg:row-span-5 lg:row-start-1",
               dimmed && "lg:col-start-3",
             )}
-            style={{ ...d(3 + i), viewTransitionName: `feature-${i}` }}
+            style={d(3 + i)}
           >
             {expanded ? (
               <article className="relative isolate h-full overflow-hidden rounded-3xl border border-brand/50 bg-[#110d1a]/90 p-5 shadow-[0_30px_90px_-30px_rgba(155,92,255,.7)] backdrop-blur-md sm:p-6 lg:p-7 lg:short:p-5">
@@ -482,10 +548,10 @@ function FeaturesSlide({ active }: SlideProps) {
 
 // Formats diffusés dans la Scène : ils passent tour à tour dans le lecteur
 const FORMATS = [
-  { label: "Sessions filmées", caption: "Des danseurs sélectionnés, filmés en session", image: "/images/heroback5.png", position: "object-[70%_center]" },
-  { label: "Interviews", caption: "La parole aux danseurs", image: "/images/features/onb1.jpg", position: "object-[center_40%]" },
-  { label: "Portraits", caption: "Ceux qui font la scène", image: "/images/features/onb2.png", position: "object-[center_35%]" },
-  { label: "Coulisses", caption: "L’envers du décor", image: "/images/features/onb4.png", position: "object-[center_35%]" },
+  { label: "Sessions filmées", caption: "Des danseurs sélectionnés, filmés en session", video: "/images/dossiers/production.mp4" },
+  { label: "Interviews", caption: "La parole aux danseurs", video: "/images/dossiers/interview.mp4" },
+  { label: "Portraits", caption: "Ceux qui font la scène", video: "/images/dossiers/portraits.mp4" },
+  { label: "Coulisses", caption: "L’envers du décor", video: "/images/dossiers/coulisses.mp4" },
 ];
 const FORMAT_DURATION = 3000; // ms par format (même durée que .deck-progress)
 
@@ -535,6 +601,20 @@ function ScenePlayer({ active }: { active: boolean }) {
     return () => window.clearTimeout(id);
   }, [active, plays]);
 
+  // Seule la vidéo à l'écran tourne, relancée depuis le début à chaque passage
+  const videos = useRef<(HTMLVideoElement | null)[]>([]);
+  useEffect(() => {
+    videos.current.forEach((video, i) => {
+      if (!video) return;
+      if (active && i === current) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, [active, current, plays]);
+
   const format = FORMATS[current];
 
   return (
@@ -542,14 +622,19 @@ function ScenePlayer({ active }: { active: boolean }) {
       {/* Écran */}
       <div className="relative isolate aspect-video overflow-hidden rounded-[28px] border border-white/12 bg-black shadow-[0_40px_120px_-30px_rgba(169,112,255,.6)]">
         {FORMATS.map((item, i) => (
-          <Image
-            key={item.image}
-            src={item.image}
-            alt=""
-            fill
-            sizes="(min-width: 900px) 680px, 100vw"
+          <video
+            key={item.video}
+            ref={(el) => {
+              videos.current[i] = el;
+            }}
+            src={item.video}
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
             data-active={i === current}
-            className={cx("deck-screen -z-20 object-cover", item.position)}
+            className="deck-screen absolute inset-0 -z-20 size-full object-cover"
           />
         ))}
         <div className="absolute inset-0 -z-10 bg-[repeating-linear-gradient(0deg,rgba(0,0,0,.22)_0px,rgba(0,0,0,.22)_1px,transparent_1px,transparent_3px),linear-gradient(180deg,rgba(0,0,0,.45)_0%,transparent_35%,transparent_55%,rgba(0,0,0,.85)_100%)]" />
@@ -600,7 +685,14 @@ function ScenePlayer({ active }: { active: boolean }) {
                   selected ? "border-brand-light shadow-[0_0_30px_-6px_rgba(189,147,255,.8)]" : "border-white/10 opacity-60 hover:opacity-100",
                 )}
               >
-                <Image src={item.image} alt="" fill sizes="170px" className={cx("-z-20 object-cover transition duration-700 group-hover:scale-110", item.position)} />
+                <video
+                  src={`${item.video}#t=0.5`}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-hidden="true"
+                  className="absolute inset-0 -z-20 size-full object-cover transition duration-700 group-hover:scale-110"
+                />
                 <span className="absolute inset-0 -z-10 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
                 <span className="absolute top-2 left-2.5 font-mono text-[10px] text-white/60">{String(i + 1).padStart(2, "0")}</span>
                 <span className="absolute inset-x-2.5 bottom-2 flex items-center gap-1.5 text-[10px] leading-tight font-bold text-white sm:text-xs">

@@ -21,8 +21,8 @@ export default function ContactPage() {
 
           <div className="mt-10 border-t border-line pt-8">
             <p className="text-[10px] font-bold uppercase tracking-[.2em] text-brand-soft">Par email</p>
-            <a href="mailto:gleam-pro@proton.me" className="mt-2 inline-block text-lg font-bold text-white no-underline hover:text-brand-light">
-              gleam-pro@proton.me
+            <a href="mailto:viewz-app@pm.me" className="mt-2 inline-block text-lg font-bold text-white no-underline hover:text-brand-light">
+              viewz-app@pm.me
             </a>
           </div>
         </div>

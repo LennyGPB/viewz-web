@@ -162,7 +162,8 @@ export default function Deck() {
             aria-label={`${i + 1} sur ${SLIDES.length} : ${item.label}`}
             aria-hidden={!active}
             inert={!active}
-            className="deck-slide absolute inset-0 z-10 overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            // Mobile : le contenu qui défile s'efface sous la barre du haut (logo)
+            className="deck-slide absolute inset-0 z-10 overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] max-lg:[mask-image:linear-gradient(to_bottom,transparent_56px,black_88px)] [&::-webkit-scrollbar]:hidden"
           >
             <SlideContent active={active} next={next} />
           </section>
@@ -207,9 +208,11 @@ export default function Deck() {
 
       {/* Barre du bas : compteur, progression, flèches */}
       <nav className="absolute inset-x-0 bottom-0 z-30 bg-linear-to-t from-black via-black/70 to-transparent pt-10" aria-label="Navigation du dossier">
-        <div className={cx(container, "grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-4 pb-5 lg:grid-cols-[1fr_auto_1fr] lg:pb-8")}>
+        {/* Téléphone en portrait : progression sur sa propre ligne ; dès 640 px (paysage,
+            tablette) tout tient sur une ligne pour laisser de la hauteur aux slides */}
+        <div className={cx(container, "grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-4 pb-5 sm:grid-cols-[auto_1fr_auto] lg:grid-cols-[1fr_auto_1fr] lg:pb-8")}>
           {/* Progression : un segment par slide, cliquable */}
-          <div className="col-span-full flex items-center gap-1.5 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:w-[420px] lg:flex-col lg:gap-3">
+          <div className="col-span-full flex items-center gap-1.5 sm:col-span-1 sm:col-start-2 sm:row-start-1 lg:w-[420px] lg:flex-col lg:gap-3">
             <ol className="flex w-full gap-1.5">
               {SLIDES.map((item, i) => (
                 <li key={item.id} className="flex-1">
@@ -241,7 +244,7 @@ export default function Deck() {
           </div>
 
           {/* Compteur */}
-          <div className="flex min-w-0 items-end gap-3 lg:col-start-1 lg:row-start-1" aria-live="polite">
+          <div className="flex min-w-0 items-end gap-3 sm:col-start-1 sm:row-start-1" aria-live="polite">
             <span key={index} className="deck-glitch font-display text-4xl leading-none font-black tracking-[-.04em] text-white lg:text-5xl">
               {String(index + 1).padStart(2, "0")}
             </span>
@@ -254,7 +257,7 @@ export default function Deck() {
           </div>
 
           {/* Flèches */}
-          <div className="flex items-center gap-2.5 justify-self-end lg:col-start-3 lg:row-start-1">
+          <div className="flex items-center gap-2.5 justify-self-end sm:col-start-3 sm:row-start-1">
             <button
               type="button"
               onClick={prev}

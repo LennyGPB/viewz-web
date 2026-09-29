@@ -28,6 +28,13 @@ const NAV: { title?: string; items: { href: string; label: string; icon: AdminIc
       { href: "/admin/notifications", label: "Notifications", icon: "bell" },
     ],
   },
+  {
+    title: "Stratégie",
+    items: [
+      { href: "/admin/marketing", label: "Plan marketing", icon: "megaphone" },
+      { href: "/presentation", label: "Dossier de présentation", icon: "presentation" },
+    ],
+  },
   { title: "Réglages", items: [{ href: "/admin/styles", label: "Styles", icon: "tag" }] },
 ];
 
