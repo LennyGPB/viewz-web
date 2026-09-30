@@ -1,5 +1,7 @@
 "use client";
 
+import type { BadgeCriterion, BadgeRarity } from "./badges";
+
 // Client léger pour parler à nos propres Route Handlers (/api/admin/*, etc.),
 // jamais directement à l'API NestJS : le token reste dans un cookie httpOnly
 // que le navigateur ne peut pas lire.
@@ -105,6 +107,53 @@ export const approveAdminOrganizerRequest = (id: string) =>
   request<AdminOrganizerRequest & { messageSent: boolean }>(`/api/admin/organizer-requests/${id}/approve`, { method: "POST" });
 export const rejectAdminOrganizerRequest = (id: string) =>
   request<AdminOrganizerRequest>(`/api/admin/organizer-requests/${id}/reject`, { method: "POST" });
+
+// --- Demandes de spot (« Propose un spot » dans l'app) ---
+export type SpotSuggestionStatus = "PENDING" | "APPROVED" | "REJECTED";
+export interface AdminSpotSuggestion {
+  id: string;
+  content: string;
+  status: SpotSuggestionStatus;
+  createdAt: string;
+  user: { id: string; username: string; email: string; profilePic: string | null };
+}
+export const getAdminSpotSuggestions = (status?: SpotSuggestionStatus) =>
+  request<AdminSpotSuggestion[]>(`/api/admin/spot-suggestions${status ? `?status=${status}` : ""}`);
+export const approveAdminSpotSuggestion = (id: string) =>
+  request<AdminSpotSuggestion & { messageSent: boolean }>(`/api/admin/spot-suggestions/${id}/approve`, { method: "POST" });
+export const rejectAdminSpotSuggestion = (id: string) =>
+  request<AdminSpotSuggestion>(`/api/admin/spot-suggestions/${id}/reject`, { method: "POST" });
+
+// --- Badges ---
+export interface AdminBadge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  rarity: BadgeRarity;
+  criterion: BadgeCriterion | null;
+  threshold: number | null;
+  _count: { users: number };
+}
+export type BadgeInput = Pick<AdminBadge, "name" | "description" | "icon" | "rarity" | "criterion" | "threshold">;
+export const getAdminBadges = () => request<AdminBadge[]>("/api/admin/badges");
+export const createAdminBadge = (payload: BadgeInput) =>
+  request<AdminBadge>("/api/admin/badges", { method: "POST", body: JSON.stringify(payload) });
+export const updateAdminBadge = (id: string, payload: Partial<BadgeInput>) =>
+  request<AdminBadge>(`/api/admin/badges/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+export const deleteAdminBadge = (id: string) => request(`/api/admin/badges/${id}`, { method: "DELETE" });
+
+export interface AdminUserBadge {
+  awardedAt: string;
+  visible: boolean;
+  badge: Pick<AdminBadge, "id" | "name" | "description" | "icon" | "rarity" | "criterion">;
+  awardedBy: { username: string } | null;
+}
+export const getAdminUserBadges = (userId: string) => request<AdminUserBadge[]>(`/api/admin/users/${userId}/badges`);
+export const awardAdminUserBadge = (userId: string, badgeId: string) =>
+  request(`/api/admin/users/${userId}/badges`, { method: "POST", body: JSON.stringify({ badgeId }) });
+export const revokeAdminUserBadge = (userId: string, badgeId: string) =>
+  request(`/api/admin/users/${userId}/badges/${badgeId}`, { method: "DELETE" });
 
 // --- Médias des profils ---
 export interface AdminUserMedia {

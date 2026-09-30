@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { use, useEffect, useState, type FormEvent } from "react";
 import { getAdminUser, updateAdminUser, type AdminRecord, type UserRole } from "@/lib/adminApi";
 import AdminHeading from "../../../AdminHeading";
+import UserBadges from "./UserBadges";
 import {
   alertError, btnPrimary, btnSecondary, chip, field, formSection, formSectionTitle, hint, input, label, loadingState, textarea,
 } from "../../../adminUi";
@@ -129,6 +130,8 @@ function UserForm({ user }: { user: UserRecord }) {
           </button>
         </div>
       </form>
+
+      <UserBadges userId={user.id} />
     </div>
   );
 }

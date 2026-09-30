@@ -24,6 +24,8 @@ const NAV: { title?: string; items: { href: string; label: string; icon: AdminIc
     items: [
       { href: "/admin/users", label: "Utilisateurs", icon: "users" },
       { href: "/admin/organizer-requests", label: "Demandes organisateur", icon: "badgeCheck" },
+      { href: "/admin/spot-suggestions", label: "Demandes de spot", icon: "mapPin" },
+      { href: "/admin/badges", label: "Badges", icon: "award" },
       { href: "/admin/user-media", label: "Médias des profils", icon: "image" },
       { href: "/admin/notifications", label: "Notifications", icon: "bell" },
     ],
